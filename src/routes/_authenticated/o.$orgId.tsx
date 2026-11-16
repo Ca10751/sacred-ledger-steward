@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
-import { BarChart3, BookOpen, BookOpenCheck, Church, LayoutDashboard, ListTree, Menu, Users, ArrowLeftRight, LogOut, Settings2 } from "lucide-react";
+import { BarChart3, BookOpen, BookOpenCheck, Church, LayoutDashboard, ListTree, Menu, Users, ArrowLeftRight, LogOut, Settings2, CalendarDays } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrg } from "@/lib/org-data";
@@ -13,6 +13,7 @@ function Nav({ orgId, isChurch, onNav }: { orgId: string; isChurch: boolean; onN
     { to: "/o/$orgId/lancamentos", label: "Lançamentos", icon: BookOpen },
     { to: "/o/$orgId/contas", label: "Plano de contas", icon: ListTree },
     { to: "/o/$orgId/relatorios", label: "Relatórios", icon: BarChart3 },
+    { to: "/o/$orgId/orcamento", label: "Planejamento anual", icon: CalendarDays },
     ...(isChurch ? [{ to: "/o/$orgId/igreja", label: "Gestão da igreja", icon: Church }] : []),
     { to: "/o/$orgId/membros", label: "Usuários e acessos", icon: Users },
   ] as const;
