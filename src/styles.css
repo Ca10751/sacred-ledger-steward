@@ -153,3 +153,41 @@
     color: var(--color-foreground);
   }
 }
+
+/* Contábil — clean navy design */
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.003 250);
+  --foreground: oklch(0.22 0.03 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 255);
+  --primary: oklch(0.32 0.08 255);
+  --primary-foreground: oklch(0.98 0.005 250);
+  --secondary: oklch(0.95 0.01 250);
+  --secondary-foreground: oklch(0.28 0.05 255);
+  --muted: oklch(0.955 0.006 250);
+  --muted-foreground: oklch(0.52 0.02 255);
+  --accent: oklch(0.94 0.02 245);
+  --accent-foreground: oklch(0.3 0.07 255);
+  --destructive: oklch(0.58 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.91 0.008 250);
+  --input: oklch(0.89 0.01 250);
+  --ring: oklch(0.5 0.1 255);
+  --success: oklch(0.55 0.13 155);
+  --sidebar: oklch(0.24 0.05 258);
+  --sidebar-foreground: oklch(0.9 0.01 250);
+  --sidebar-accent: oklch(0.32 0.06 258);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(0.32 0.04 258);
+}
+@theme inline {
+  --color-success: var(--success);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+body { font-family: var(--font-sans); }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+@media print { .no-print { display: none !important; } body { background: white; } }

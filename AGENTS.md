@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Architecture
+- Multi-tenant isolation is enforced by RLS via is_member/can_write/is_org_admin on org_id; every org-scoped table carries org_id.
+- Journal entries are created only through the create_journal_entry RPC so balance validation and lines insert stay atomic.
+- Reports (DRE, balancete, razonetes) are computed client-side by pure functions in src/lib/reports.ts (tested).
