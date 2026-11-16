@@ -81,24 +81,24 @@ export function EntryForm({ orgId, onDone }: { orgId: string; onDone: () => void
 
       {mode === "simples" ? (
         <div className="grid gap-3 rounded-md border p-3 sm:grid-cols-2">
-          <AccSelect l={lines[0]} i={0} />
+          {AccSelect({ l: lines[0], i: 0 })}
           <div className="flex gap-2">
             <select className={sel + " w-32"} value={simpleNature} onChange={(e) => setSimpleNature(e.target.value as "D" | "C")}>
               <option value="D">Débito</option><option value="C">Crédito</option>
             </select>
             <Input type="number" step="0.01" min="0" placeholder="Valor" className="num" value={lines[0].debit || lines[0].credit} onChange={(e) => { upd(0, "debit", e.target.value); upd(0, "credit", ""); }} required />
           </div>
-          <ExtraSelects l={lines[0]} i={0} />
+          {ExtraSelects({ l: lines[0], i: 0 })}
         </div>
       ) : (
         <div className="space-y-2">
           {lines.map((l, i) => (
             <div key={i} className="grid gap-2 rounded-md border p-3 sm:grid-cols-[2fr_1fr_1fr_auto]">
-              <AccSelect l={l} i={i} />
+              {AccSelect({ l: l, i: i })}
               <Input type="number" step="0.01" min="0" placeholder="Débito" className="num" value={l.debit} onChange={(e) => upd(i, "debit", e.target.value)} disabled={!!+l.credit} />
               <Input type="number" step="0.01" min="0" placeholder="Crédito" className="num" value={l.credit} onChange={(e) => upd(i, "credit", e.target.value)} disabled={!!+l.debit} />
               <Button type="button" variant="ghost" size="icon" onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))} disabled={lines.length <= 2} aria-label="Remover"><Trash2 className="h-4 w-4" /></Button>
-              <div className="grid gap-2 sm:col-span-4 sm:grid-cols-2"><ExtraSelects l={l} i={i} /></div>
+              <div className="grid gap-2 sm:col-span-4 sm:grid-cols-2">{ExtraSelects({ l: l, i: i })}</div>
             </div>
           ))}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
