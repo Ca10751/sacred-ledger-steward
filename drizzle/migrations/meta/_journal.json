@@ -8,6 +8,13 @@
       "when": 1794790143759,
       "tag": "0000_accounting_core",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794850813041,
+      "tag": "0001_complete_backend_modules",
+      "breakpoints": true
     }
   ]
 }

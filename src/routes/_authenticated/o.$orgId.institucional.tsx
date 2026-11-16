@@ -12,7 +12,7 @@ import { useMyRole, useOrg } from "@/lib/org-data";
 
 export const Route=createFileRoute("/_authenticated/o/$orgId/institucional")({component:Institucional});
 const empty={legal_name:"",cnpj:"",address_street:"",address_number:"",address_complement:"",address_district:"",address_city:"",address_state:"",address_postal_code:"",legal_representative_name:"",accountant_name:"",accountant_crc:""};
-function validCnpj(value:string){const n=value.split("").filter(ch=>ch>="0"&&ch<="9").join("");if(n.length!==14||n.split("").every(ch=>ch===n[0]))return false;const calc=(base:string,weights:number[])=>{const sum=base.split("").reduce((s,d,i)=>s+Number(d)*weights[i],0);const r=sum%11;return r<2?0:11-r;};return calc(n.slice(0,12),[5,4,3,2,9,8,7,6,5,4,3,2])===Number(n[12])&&calc(n.slice(0,13),[6,5,4,3,2,9,8,7,6,5,4,3,2])===Number(n[13]);}
+function validCnpj(value:string){const n=value.split("").filter(ch=>ch>="0"&&ch<="9").join("");if(n.length!==14||n.split("").every(ch=>ch===n[0]))return false;const calc=(base:string,weights:number[])=>{const sum=base.split("").reduce((s,d,i)=>s+Number(d)*(weights[i]??0),0);const r=sum%11;return r<2?0:11-r;};return calc(n.slice(0,12),[5,4,3,2,9,8,7,6,5,4,3,2])===Number(n[12])&&calc(n.slice(0,13),[6,5,4,3,2,9,8,7,6,5,4,3,2])===Number(n[13]);}
 function Institucional(){
  const {orgId}=Route.useParams();const qc=useQueryClient();const db=supabase as any;const {data:org}=useOrg(orgId);const {data:role}=useMyRole(orgId);const isAdmin=role==="admin";const [form,setForm]=useState(empty);
  useEffect(()=>{if(org)setForm(Object.fromEntries(Object.keys(empty).map(k=>[k,(org as any)[k]??""])) as typeof empty)},[org]);
