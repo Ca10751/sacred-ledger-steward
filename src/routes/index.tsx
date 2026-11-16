@@ -1,14 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { BookOpen, Building2, Church, Scale } from "lucide-react";
+import { BookOpen, BookOpenCheck, Building2, Church, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "Escritura — Contabilidade para empresas e igrejas" },
-    { name: "description", content: "Escrituração contábil multi-empresa com partidas dobradas, DRE, balancete, razonetes e módulo para igrejas." },
-    { property: "og:title", content: "Escritura — Contabilidade para empresas e igrejas" },
+    { title: "Sapucaí Tropicalis — Gestão contábil para empresas e igrejas" },
+    { name: "description", content: "Gestão contábil multiempresa com partidas dobradas, DRE, balancete, razonetes e recursos para igrejas." },
+    { property: "og:title", content: "Sapucaí Tropicalis — Gestão contábil para empresas e igrejas" },
     { property: "og:description", content: "Lançamentos, DRE, balancete e prestação de contas de igrejas em um só lugar." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
@@ -28,11 +28,11 @@ function Index() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-2 font-semibold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">E</span>Escritura</div>
+        <div className="flex items-center gap-2 font-semibold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground"><BookOpenCheck className="h-5 w-5" /></span>Sapucaí Tropicalis</div>
         <Button asChild variant="outline"><Link to="/auth">Entrar</Link></Button>
       </header>
       <main className="mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-20">
-        <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Escrituração contábil</p>
+        <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Gestão contábil e administrativa</p>
         <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Contabilidade clara para empresas e igrejas.</h1>
         <p className="mt-5 max-w-2xl text-lg text-muted-foreground">Um sistema direto e rápido: lance, confira e preste contas sem complicação.</p>
         <div className="mt-8 flex gap-3"><Button asChild size="lg"><Link to="/auth">Começar agora</Link></Button></div>
