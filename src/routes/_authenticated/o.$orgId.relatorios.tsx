@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Printer } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader, PeriodPicker } from "@/components/app/PageHeader";
 import { useAccounts, useCostCenters, useLines, useOrg } from "@/lib/org-data";
-import { brl, fmtDate, income, monthRange, trialBalance, type Acc, type Line } from "@/lib/reports";
+import { balanceSheet, brl, downloadCsv, fmtDate, income, monthRange, trialBalance, type Acc, type Line } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/o/$orgId/relatorios")({ component: Relatorios });
 
@@ -21,7 +21,7 @@ function Relatorios() {
   const isChurch = org?.type === "igreja";
   return (
     <>
-      <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<Button variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button>} />
+      <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<div className="flex gap-2"><Button variant="outline" onClick={exportCsv}><Download className="mr-1.5 h-4 w-4" />Exportar CSV</Button><Button variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button></div>} />
       <div className="no-print mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <PeriodPicker from={from} to={to} onChange={(f, t) => setP({ from: f, to: t })} />
         <select value={cc} onChange={(e) => setCc(e.target.value)} className="h-9 rounded-md border border-input bg-card px-2 text-sm">
@@ -85,6 +85,32 @@ function Balancete({ accounts, lines, from, to }: P) {
       </table>
     </div>
   );
+}
+
+function BalanceSheet({ accounts, lines, asOf }: { accounts: Acc[]; lines: Line[]; asOf: string }) {
+  const bp = balanceSheet(accounts, lines, asOf);
+  const groups = [
+    { title: "Ativo", type: "ativo" as const, total: bp.assets },
+    { title: "Passivo", type: "passivo" as const, total: bp.liabilities },
+    { title: "Patrimônio líquido", type: "patrimonio" as const, total: bp.equity },
+  ];
+  return <div className="space-y-4">
+    <div className="rounded-lg border bg-card">
+      <div className="border-b px-5 py-3 text-center"><div className="font-semibold">Balanço Patrimonial</div><div className="text-xs text-muted-foreground">Posição em {fmtDate(asOf)}</div></div>
+      {groups.map((g) => <section key={g.type} className="border-b last:border-0">
+        <div className="bg-muted/50 px-5 py-2 text-xs font-semibold uppercase tracking-wider">{g.title}</div>
+        {bp.rows.filter((x) => x.account.type === g.type).map((x) => <Row key={x.account.id} code={x.account.code} label={x.account.name} value={x.balance} />)}
+        <Row label={`Total do ${g.title.toLowerCase()}`} value={g.total} strong />
+      </section>)}
+      <section className="border-t-2 px-5 py-3">
+        <div className="flex justify-between text-sm"><span>Resultado do exercício ainda não encerrado</span><span className="num">{brl(bp.currentResult)}</span></div>
+        <div className="mt-2 flex justify-between font-semibold"><span>Passivo + Patrimônio líquido + Resultado</span><span className="num">{brl(bp.liabilitiesAndEquity)}</span></div>
+        <div className="mt-1 flex justify-between text-sm"><span>Ativo</span><span className="num">{brl(bp.assets)}</span></div>
+        <p className={`mt-2 text-xs ${Math.abs(bp.assets - bp.liabilitiesAndEquity) < 0.01 ? "text-success" : "text-destructive"}`}>{Math.abs(bp.assets - bp.liabilitiesAndEquity) < 0.01 ? "Balanço patrimonial equilibrado." : "Atenção: ativo e passivo + patrimônio + resultado apresentam diferença."}</p>
+      </section>
+    </div>
+    <p className="text-xs text-muted-foreground">O resultado do exercício é apresentado separadamente. Esta tela não realiza lançamento de encerramento nem substitui a conferência das contas e dos saldos anteriores.</p>
+  </div>;
 }
 
 function Razonetes({ accounts, lines, from, to }: P) {
