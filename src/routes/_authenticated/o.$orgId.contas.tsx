@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/app/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { useAccounts, useCostCenters, useMyRole } from "@/lib/org-data";
+import { useAccounts, useCostCenters, useLines, useMyRole } from "@/lib/org-data";
+import { balanceSheet, brl, fmtDate } from "@/lib/reports";
 import type { AccountType } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/o/$orgId/contas")({ component: Contas });
@@ -21,6 +22,10 @@ function Contas() {
   const canWrite = role === "admin" || role === "contador";
   const { data: accounts = [] } = useAccounts(orgId);
   const { data: ccs = [] } = useCostCenters(orgId);
+  const asOf = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
+  const { data: lines = [] } = useLines(orgId, asOf);
+  const bs = balanceSheet(accounts, lines, asOf);
+  const equityAccounts = bs.rows.filter((x) => x.account.type === "patrimonio");
   const [a, setA] = useState({ code: "", name: "", type: "despesa" as AccountType, analytic: true });
   const [c, setC] = useState({ code: "", name: "" });
 
@@ -46,7 +51,7 @@ function Contas() {
     <>
       <PageHeader title="Plano de contas" subtitle="Contas sintéticas agrupam; lançamentos são feitos em contas analíticas." />
       <Tabs defaultValue="contas">
-        <TabsList><TabsTrigger value="contas">Contas</TabsTrigger><TabsTrigger value="cc">Centros de custo</TabsTrigger></TabsList>
+        <TabsList className="flex-wrap"><TabsTrigger value="contas">Contas</TabsTrigger><TabsTrigger value="patrimonio">Patrimônio e saldos</TabsTrigger><TabsTrigger value="cc">Centros de custo</TabsTrigger></TabsList>
         <TabsContent value="contas" className="mt-4 space-y-4">
           {canWrite && (
             <form onSubmit={addAccount} className="grid gap-2 rounded-lg border bg-card p-3 sm:grid-cols-[120px_1fr_170px_130px_auto]">
@@ -76,6 +81,32 @@ function Contas() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </TabsContent>
+        <TabsContent value="patrimonio" className="mt-4 space-y-4">
+          <div className="rounded-xl border bg-card p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div><h2 className="font-semibold">Posição patrimonial</h2><p className="mt-1 text-xs text-muted-foreground">Saldos contabilizados até {fmtDate(asOf)} · conforme os lançamentos registrados</p></div>
+              <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">Balanço patrimonial</span>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { label: "Ativo", value: bs.assets, hint: "Bens e direitos" },
+                { label: "Passivo", value: bs.liabilities, hint: "Obrigações" },
+                { label: "Patrimônio líquido", value: bs.equity, hint: "Patrimônio social e acumulado" },
+                { label: "Resultado do exercício", value: bs.currentResult, hint: "Superávit / déficit do ano" },
+              ].map((x) => <div key={x.label} className="rounded-lg bg-muted/50 p-4"><div className="text-xs font-medium text-muted-foreground">{x.label}</div><div className="num mt-2 text-xl font-semibold">{brl(x.value)}</div><div className="mt-1 text-xs text-muted-foreground">{x.hint}</div></div>)}
+            </div>
+            <div className="mt-4 flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div><div className="text-sm font-medium">Conferência do balanço</div><div className="mt-1 text-xs text-muted-foreground">Ativo deve corresponder ao passivo mais patrimônio líquido e resultado do exercício.</div></div>
+              <div className="num text-lg font-semibold">{brl(bs.assets)} <span className="text-muted-foreground">=</span> {brl(bs.liabilitiesAndEquity)}</div>
+            </div>
+          </div>
+          <div className="rounded-xl border bg-card p-5">
+            <div className="flex items-start gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"><span className="text-lg font-semibold">i</span></span><div><h3 className="font-semibold">Como informar o patrimônio inicial?</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">O patrimônio líquido não deve ser digitado como um número isolado. Cadastre as contas patrimoniais no plano de contas e registre os saldos iniciais em um lançamento de abertura, com data-base, contas devedoras e credoras correspondentes. O lançamento precisa fechar em débitos e créditos; assim, o saldo do patrimônio social será demonstrável e auditável.</p></div></div>
+            <div className="mt-4 rounded-lg bg-muted/50 p-4"><div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Composição do patrimônio líquido</div>
+              {equityAccounts.length ? <div className="mt-2 divide-y">{equityAccounts.map((x) => <div key={x.account.id} className="flex justify-between gap-4 py-2 text-sm"><span>{x.account.code} · {x.account.name}</span><span className="num font-medium">{brl(x.balance)}</span></div>)}</div> : <p className="mt-2 text-sm text-muted-foreground">Ainda não há saldo contabilizado em contas de patrimônio líquido.</p>}
+            </div>
           </div>
         </TabsContent>
         <TabsContent value="cc" className="mt-4 space-y-4">
