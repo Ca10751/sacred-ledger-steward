@@ -20,6 +20,7 @@ const sel = "h-9 w-full rounded-md border border-input bg-card px-2 text-sm";
 function Igreja() {
   const { orgId } = Route.useParams();
   const qc = useQueryClient();
+  const db = supabase as any;
   const { data: org } = useOrg(orgId);
   const { data: role } = useMyRole(orgId);
   const canWrite = role === "admin" || role === "contador";
@@ -28,11 +29,11 @@ function Igreja() {
   const [{ from, to }, setP] = useState(monthRange());
   const { data: lines = [] } = useLines(orgId, to);
   const { data: contribs = [] } = useQuery({ queryKey: ["contribs", orgId, from, to], queryFn: async () => {
-    const { data, error } = await supabase.from("contributions").select("*, congregations(name), church_members(full_name,registration_number)").eq("org_id", orgId).gte("contribution_date", from).lte("contribution_date", to).order("contribution_date", { ascending: false });
+    const { data, error } = await db.from("contributions").select("*, congregations(name), church_members(full_name,registration_number)").eq("org_id", orgId).gte("contribution_date", from).lte("contribution_date", to).order("contribution_date", { ascending: false });
     if (error) throw error; return data;
   }});
   const { data: churchMembers = [] } = useQuery({ queryKey: ["church-members", orgId], queryFn: async () => {
-    const { data, error } = await supabase.from("church_members").select("id,full_name,registration_number").eq("org_id", orgId).eq("status", "ativo").order("full_name");
+    const { data, error } = await db.from("church_members").select("id,full_name,registration_number").eq("org_id", orgId).eq("status", "ativo").order("full_name");
     if (error) throw error; return data ?? [];
   }});
   const cashAccs = accounts.filter((a) => a.type === "ativo" && a.analytic && a.code.startsWith("1.1"));
@@ -47,7 +48,7 @@ function Igreja() {
     const amount = +f.amount;
     const member = churchMembers.find((m: any) => m.id === f.member_id);
     const contributor = member?.full_name || f.contributor.trim();
-    const { error } = await supabase.rpc("create_contribution", {
+    const { error } = await db.rpc("create_contribution", {
       _org: orgId, _date: f.date, _kind: f.kind, _member_id: f.member_id || null,
       _contributor: contributor || null, _amount: amount, _congregation_id: f.congregation_id || null,
       _cash_account_id: cash, _revenue_account_id: rev.id,
