@@ -1,4 +1,4 @@
-# Sacred Ledger Steward
+# Sapucaí Tropicalis
 
 Construa um sistema web de gestão e escrituração contábil multi-empresa com suporte a igrejas e empresas comerciais:
 
@@ -11,9 +11,9 @@ Construa um sistema web de gestão e escrituração contábil multi-empresa com 
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://sacred-ledger-steward.lovable.app
+**Aplicação (URL técnica atual)**: https://sacred-ledger-steward.lovable.app
 
-## Build with Lovable
+## Desenvolvimento com Lovable
 
 Continue developing this project in the [Lovable editor](https://lovable.dev/projects/602b92e1-0eee-4264-8c90-8b5f1d315955).
 

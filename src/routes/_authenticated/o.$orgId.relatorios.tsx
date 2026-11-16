@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader, PeriodPicker } from "@/components/app/PageHeader";
 import { useAccounts, useCostCenters, useLines, useOrg } from "@/lib/org-data";
-import { brl, fmtDate, income, monthRange, trialBalance, type Acc, type Line } from "@/lib/reports";
+import { balanceSheet, brl, downloadCsv, fmtDate, income, monthRange, trialBalance, type Acc, type Line } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/o/$orgId/relatorios")({ component: Relatorios });
 
 function Relatorios() {
   const { orgId } = Route.useParams();
   const { data: org } = useOrg(orgId);
+  const institution = org as any;
   const { data: accounts = [] } = useAccounts(orgId);
   const { data: ccs = [] } = useCostCenters(orgId);
   const [{ from, to }, setP] = useState(monthRange());
@@ -19,21 +20,45 @@ function Relatorios() {
   const { data: all = [] } = useLines(orgId, to);
   const lines = useMemo(() => (cc ? all.filter((l) => l.cost_center_id === cc) : all), [all, cc]);
   const isChurch = org?.type === "igreja";
+  const dre = income(accounts, lines, from, to);
+  const tb = trialBalance(accounts, lines, from, to);
+  const bp = balanceSheet(accounts, lines, to);
+  const exportDreCsv = () => downloadCsv(`dre-${from}-${to}.csv`, ["Tipo", "Código", "Conta", "Valor"], [
+    ...dre.receitas.map((x) => ["Receita", x.account.code, x.account.name, x.value]),
+    ...dre.despesas.map((x) => ["Despesa", x.account.code, x.account.name, x.value]),
+  ]);
+  const exportTrialCsv = () => downloadCsv(`balancete-${from}-${to}.csv`, ["Código", "Conta", "Saldo anterior", "Débitos", "Créditos", "Saldo atual"], tb.rows.map((x) => [x.account.code, x.account.name, x.opening, x.debit, x.credit, x.closing]));
+  const exportBalanceCsv = () => downloadCsv(`balanco-${to}.csv`, ["Grupo", "Código", "Conta", "Saldo"], bp.rows.map((x) => [x.account.type, x.account.code, x.account.name, x.balance]));
+  const exportLinesCsv = () => downloadCsv(`lancamentos-${from}-${to}.csv`, ["Data", "Código", "Conta", "Débito", "Crédito", "Congregação", "Centro de custo"], lines.filter((l) => l.date >= from && l.date <= to).map((l) => {
+    const account = accounts.find((a) => a.id === l.account_id);
+    return [l.date, account?.code ?? "", account?.name ?? "", l.debit, l.credit, l.congregation_id ?? "", l.cost_center_id ?? ""];
+  }));
   return (
     <>
-      <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<Button variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button>} />
+      <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={exportDreCsv}>CSV DRE</Button><Button size="sm" variant="outline" onClick={exportTrialCsv}>CSV Balancete</Button><Button size="sm" variant="outline" onClick={exportBalanceCsv}>CSV BP</Button><Button size="sm" variant="outline" onClick={exportLinesCsv}>CSV Lançamentos</Button><Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button></div>} />
       <div className="no-print mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <PeriodPicker from={from} to={to} onChange={(f, t) => setP({ from: f, to: t })} />
         <select value={cc} onChange={(e) => setCc(e.target.value)} className="h-9 rounded-md border border-input bg-card px-2 text-sm">
           <option value="">Todos os centros de custo</option>{ccs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </div>
+      <div className="report-heading mb-4 hidden text-center print:block">
+        <h1 className="text-lg font-bold">{institution?.legal_name || org?.name}</h1>
+        {institution?.cnpj && <p className="text-xs">CNPJ: {institution.cnpj}</p>}
+        <p className="text-xs">{[institution?.address_street,institution?.address_number,institution?.address_complement,institution?.address_district,institution?.address_city,institution?.address_state,institution?.address_postal_code].filter(Boolean).join(", ")}</p>
+        <p className="text-sm">Relatórios contábeis · {fmtDate(from)} a {fmtDate(to)}</p>
+      </div>
       <Tabs defaultValue="dre">
-        <TabsList className="no-print"><TabsTrigger value="dre">{isChurch ? "Demonstração do Superávit" : "DRE"}</TabsTrigger><TabsTrigger value="bal">Balancete</TabsTrigger><TabsTrigger value="raz">Razonetes</TabsTrigger></TabsList>
+        <TabsList className="no-print flex-wrap"><TabsTrigger value="dre">{isChurch ? "Demonstração do Superávit" : "DRE"}</TabsTrigger><TabsTrigger value="bal">Balancete</TabsTrigger><TabsTrigger value="bp">Balanço Patrimonial</TabsTrigger><TabsTrigger value="raz">Razonetes</TabsTrigger></TabsList>
         <TabsContent value="dre" className="mt-4"><DRE accounts={accounts} lines={lines} from={from} to={to} church={isChurch} /></TabsContent>
         <TabsContent value="bal" className="mt-4"><Balancete accounts={accounts} lines={lines} from={from} to={to} /></TabsContent>
+        <TabsContent value="bp" className="mt-4"><BalanceSheet accounts={accounts} lines={lines} asOf={to} /></TabsContent>
         <TabsContent value="raz" className="mt-4"><Razonetes accounts={accounts} lines={lines} from={from} to={to} /></TabsContent>
       </Tabs>
+      <div className="mt-12 hidden grid-cols-2 gap-12 text-center text-sm print:grid">
+        <div className="pt-8"><div className="border-t pt-2">{institution?.legal_representative_name || "Presidente / Responsável legal"}</div><div className="text-xs">Representante legal</div></div>
+        <div className="pt-8"><div className="border-t pt-2">{institution?.accountant_name || "Contador(a) responsável"}</div><div className="text-xs">CRC: {institution?.accountant_crc || "Não informado"}</div></div>
+      </div>
     </>
   );
 }
@@ -85,6 +110,32 @@ function Balancete({ accounts, lines, from, to }: P) {
       </table>
     </div>
   );
+}
+
+function BalanceSheet({ accounts, lines, asOf }: { accounts: Acc[]; lines: Line[]; asOf: string }) {
+  const bp = balanceSheet(accounts, lines, asOf);
+  const groups = [
+    { title: "Ativo", type: "ativo" as const, total: bp.assets },
+    { title: "Passivo", type: "passivo" as const, total: bp.liabilities },
+    { title: "Patrimônio líquido", type: "patrimonio" as const, total: bp.equity },
+  ];
+  return <div className="space-y-4">
+    <div className="rounded-lg border bg-card">
+      <div className="border-b px-5 py-3 text-center"><div className="font-semibold">Balanço Patrimonial</div><div className="text-xs text-muted-foreground">Posição em {fmtDate(asOf)}</div></div>
+      {groups.map((g) => <section key={g.type} className="border-b last:border-0">
+        <div className="bg-muted/50 px-5 py-2 text-xs font-semibold uppercase tracking-wider">{g.title}</div>
+        {bp.rows.filter((x) => x.account.type === g.type).map((x) => <Row key={x.account.id} code={x.account.code} label={x.account.name} value={x.balance} />)}
+        <Row label={`Total do ${g.title.toLowerCase()}`} value={g.total} strong />
+      </section>)}
+      <section className="border-t-2 px-5 py-3">
+        <div className="flex justify-between text-sm"><span>Resultado do exercício ainda não encerrado</span><span className="num">{brl(bp.currentResult)}</span></div>
+        <div className="mt-2 flex justify-between font-semibold"><span>Passivo + Patrimônio líquido + Resultado</span><span className="num">{brl(bp.liabilitiesAndEquity)}</span></div>
+        <div className="mt-1 flex justify-between text-sm"><span>Ativo</span><span className="num">{brl(bp.assets)}</span></div>
+        <p className={`mt-2 text-xs ${Math.abs(bp.assets - bp.liabilitiesAndEquity) < 0.01 ? "text-success" : "text-destructive"}`}>{Math.abs(bp.assets - bp.liabilitiesAndEquity) < 0.01 ? "Balanço patrimonial equilibrado." : "Atenção: ativo e passivo + patrimônio + resultado apresentam diferença."}</p>
+      </section>
+    </div>
+    <p className="text-xs text-muted-foreground">O resultado do exercício é apresentado separadamente. Esta tela não realiza lançamento de encerramento nem substitui a conferência das contas e dos saldos anteriores.</p>
+  </div>;
 }
 
 function Razonetes({ accounts, lines, from, to }: P) {

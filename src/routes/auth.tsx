@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [
-    { title: "Entrar — Escritura" },
+    { title: "Entrar — Sapucaí Tropicalis" },
     { name: "description", content: "Acesse sua conta para gerenciar a contabilidade das suas organizações." },
-    { property: "og:title", content: "Entrar — Escritura" },
-    { property: "og:description", content: "Acesse sua conta Escritura." },
+    { property: "og:title", content: "Entrar — Sapucaí Tropicalis" },
+    { property: "og:description", content: "Acesse sua conta Sapucaí Tropicalis." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ]}),
@@ -49,7 +50,7 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4">
       <div className="w-full max-w-sm rounded-xl border bg-card p-7 shadow-sm">
-        <div className="mb-6 flex items-center gap-2 font-semibold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">E</span>Escritura</div>
+        <div className="mb-6"><BrandLogo className="mx-auto h-20 w-full max-w-[300px]" /></div>
         <h1 className="text-xl font-semibold">{mode === "in" ? "Entrar" : "Criar conta"}</h1>
         <form onSubmit={submit} className="mt-5 space-y-4">
           {mode === "up" && <div className="space-y-1.5"><Label>Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} required /></div>}

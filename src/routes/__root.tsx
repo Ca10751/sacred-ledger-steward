@@ -83,14 +83,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Escritura — Contabilidade multi-empresa" },
-      { name: "description", content: "Escrituração contábil para empresas e igrejas" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Escritura — Contabilidade multi-empresa" },
-      { property: "og:description", content: "Escrituração contábil para empresas e igrejas" },
+      { title: "Sapucaí Tropicalis — Gestão contábil" },
+      { name: "description", content: "Gestão contábil e administrativa para empresas e igrejas" },
+      { name: "author", content: "Sapucaí Tropicalis" },
+      { property: "og:title", content: "Sapucaí Tropicalis — Gestão contábil" },
+      { property: "og:description", content: "Gestão contábil e administrativa para empresas e igrejas" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      
     ],
     links: [
       {
@@ -99,7 +99,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/brand/sapucai-mark.svg", type: "image/svg+xml" },
+      { name: "theme-color", content: "#063d32" },
     ],
   }),
   shellComponent: RootShell,

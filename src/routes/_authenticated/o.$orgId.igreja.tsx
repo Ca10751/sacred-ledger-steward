@@ -20,6 +20,7 @@ const sel = "h-9 w-full rounded-md border border-input bg-card px-2 text-sm";
 function Igreja() {
   const { orgId } = Route.useParams();
   const qc = useQueryClient();
+  const db = supabase as any;
   const { data: org } = useOrg(orgId);
   const { data: role } = useMyRole(orgId);
   const canWrite = role === "admin" || role === "contador";
@@ -28,11 +29,15 @@ function Igreja() {
   const [{ from, to }, setP] = useState(monthRange());
   const { data: lines = [] } = useLines(orgId, to);
   const { data: contribs = [] } = useQuery({ queryKey: ["contribs", orgId, from, to], queryFn: async () => {
-    const { data, error } = await supabase.from("contributions").select("*, congregations(name)").eq("org_id", orgId).gte("contribution_date", from).lte("contribution_date", to).order("contribution_date", { ascending: false });
+    const { data, error } = await db.from("contributions").select("*, congregations(name), church_members(full_name,registration_number)").eq("org_id", orgId).gte("contribution_date", from).lte("contribution_date", to).order("contribution_date", { ascending: false });
     if (error) throw error; return data;
   }});
+  const { data: churchMembers = [] } = useQuery({ queryKey: ["church-members", orgId], queryFn: async () => {
+    const { data, error } = await db.from("church_members").select("id,full_name,registration_number").eq("org_id", orgId).eq("status", "ativo").order("full_name");
+    if (error) throw error; return data ?? [];
+  }});
   const cashAccs = accounts.filter((a) => a.type === "ativo" && a.analytic && a.code.startsWith("1.1"));
-  const [f, setF] = useState({ kind: "dizimo" as Kind, contributor: "", amount: "", date: new Date().toISOString().slice(0, 10), congregation_id: "", cash_id: "" });
+  const [f, setF] = useState({ kind: "dizimo" as Kind, member_id: "", contributor: "", amount: "", date: new Date().toISOString().slice(0, 10), congregation_id: "", cash_id: "" });
   const [cg, setCg] = useState({ name: "", city: "", leader: "" });
 
   async function addContrib(e: React.FormEvent) {
@@ -41,15 +46,16 @@ function Igreja() {
     const cash = f.cash_id || cashAccs[0]?.id;
     if (!rev || !cash) { toast.error("Configure as contas de receita e caixa no plano de contas"); return; }
     const amount = +f.amount;
-    const { data: entryId, error } = await supabase.rpc("create_journal_entry", {
-      _org: orgId, _date: f.date, _description: `${kinds[f.kind]}${f.contributor ? " — " + f.contributor : ""}`, _document: "", _mode: "dobrada",
-      _lines: [{ account_id: cash, debit: amount, credit: 0, congregation_id: f.congregation_id }, { account_id: rev.id, debit: 0, credit: amount, congregation_id: f.congregation_id }],
+    const member = churchMembers.find((m: any) => m.id === f.member_id);
+    const contributor = member?.full_name || f.contributor.trim();
+    const { error } = await db.rpc("create_contribution", {
+      _org: orgId, _date: f.date, _kind: f.kind, _member_id: f.member_id || null,
+      _contributor: contributor || null, _amount: amount, _congregation_id: f.congregation_id || null,
+      _cash_account_id: cash, _revenue_account_id: rev.id,
     });
     if (error) { toast.error(error.message); return; }
-    const { error: e2 } = await supabase.from("contributions").insert({ org_id: orgId, entry_id: entryId, kind: f.kind, contributor: f.contributor || null, amount, contribution_date: f.date, congregation_id: f.congregation_id || null });
-    if (e2) { toast.error(e2.message); return; }
     toast.success("Contribuição registrada e contabilizada");
-    setF({ ...f, contributor: "", amount: "" });
+    setF({ ...f, member_id: "", contributor: "", amount: "" });
     ["contribs", "lines", "entries", "recent"].forEach((k) => qc.invalidateQueries({ queryKey: [k, orgId] }));
   }
   async function addCong(e: React.FormEvent) {
@@ -82,7 +88,8 @@ function Igreja() {
           {canWrite && (
             <form onSubmit={addContrib} className="grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-3">
               <div className="space-y-1.5"><Label>Tipo</Label><select className={sel} value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as Kind })}>{Object.entries(kinds).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-              <div className="space-y-1.5"><Label>Contribuinte (opcional)</Label><Input value={f.contributor} onChange={(e) => setF({ ...f, contributor: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Membro cadastrado</Label><select className={sel} value={f.member_id} onChange={(e) => setF({ ...f, member_id: e.target.value, contributor: "" })}><option value="">Não vincular a membro</option>{churchMembers.map((m: any) => <option key={m.id} value={m.id}>{m.full_name}{m.registration_number ? " · " + m.registration_number : ""}</option>)}</select></div>
+              <div className="space-y-1.5"><Label>Contribuinte avulso (opcional)</Label><Input value={f.contributor} disabled={!!f.member_id} onChange={(e) => setF({ ...f, contributor: e.target.value })} /></div>
               <div className="space-y-1.5"><Label>Valor</Label><Input type="number" step="0.01" min="0.01" className="num" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} required /></div>
               <div className="space-y-1.5"><Label>Data</Label><Input type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} required /></div>
               <div className="space-y-1.5"><Label>Congregação</Label><select className={sel} value={f.congregation_id} onChange={(e) => setF({ ...f, congregation_id: e.target.value })}><option value="">—</option>{congs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
@@ -92,10 +99,10 @@ function Igreja() {
           )}
           <div className="overflow-x-auto rounded-lg border bg-card">
             <table className="w-full text-sm">
-              <thead className="border-b bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground"><tr><th className="px-4 py-2.5">Data</th><th className="px-4 py-2.5">Tipo</th><th className="px-4 py-2.5">Contribuinte</th><th className="px-4 py-2.5">Congregação</th><th className="px-4 py-2.5 text-right">Valor</th></tr></thead>
+              <thead className="border-b bg-muted/50 text-left text-xs uppercase tracking-wider text-muted-foreground"><tr><th className="px-4 py-2.5">Data</th><th className="px-4 py-2.5">Tipo</th><th className="px-4 py-2.5">Contribuinte / membro</th><th className="px-4 py-2.5">Congregação</th><th className="px-4 py-2.5 text-right">Valor</th></tr></thead>
               <tbody>
                 {contribs.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">Nenhuma contribuição no período.</td></tr>}
-                {contribs.map((c: any) => <tr key={c.id} className="border-b last:border-0"><td className="num px-4 py-2">{fmtDate(c.contribution_date)}</td><td className="px-4 py-2">{kinds[c.kind as Kind]}</td><td className="px-4 py-2">{c.contributor ?? "—"}</td><td className="px-4 py-2 text-muted-foreground">{c.congregations?.name ?? "—"}</td><td className="num px-4 py-2 text-right">{brl(+c.amount)}</td></tr>)}
+                {contribs.map((c: any) => <tr key={c.id} className="border-b last:border-0"><td className="num px-4 py-2">{fmtDate(c.contribution_date)}</td><td className="px-4 py-2">{kinds[c.kind as Kind]}</td><td className="px-4 py-2">{c.church_members?.full_name ?? c.contributor ?? "—"}{c.church_members?.registration_number ? <span className="ml-1 text-xs text-muted-foreground">· {c.church_members.registration_number}</span> : null}</td><td className="px-4 py-2 text-muted-foreground">{c.congregations?.name ?? "—"}</td><td className="num px-4 py-2 text-right">{brl(+c.amount)}</td></tr>)}
               </tbody>
             </table>
           </div>

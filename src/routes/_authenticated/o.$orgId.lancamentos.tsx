@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,10 +17,13 @@ export const Route = createFileRoute("/_authenticated/o/$orgId/lancamentos")({ c
 function Lancamentos() {
   const { orgId } = Route.useParams();
   const qc = useQueryClient();
+  const db = supabase as any;
   const { data: role } = useMyRole(orgId);
   const canWrite = role === "admin" || role === "contador";
   const [{ from, to }, setP] = useState(monthRange());
   const [q, setQ] = useState(""); const [open, setOpen] = useState(false);
+  const [reversalTarget, setReversalTarget] = useState<any>(null);
+  const [reversalReason, setReversalReason] = useState("");
   const { data = [], isLoading } = useQuery({ queryKey: ["entries", orgId, from, to], queryFn: async () => {
     const { data, error } = await supabase.from("journal_entries")
       .select("*, journal_lines(id,debit,credit,memo,accounts(code,name),cost_centers(name),congregations(name))")
@@ -29,10 +32,18 @@ function Lancamentos() {
     if (error) throw error; return data;
   }});
   const refresh = () => { qc.invalidateQueries({ queryKey: ["entries", orgId] }); qc.invalidateQueries({ queryKey: ["lines", orgId] }); qc.invalidateQueries({ queryKey: ["recent", orgId] }); };
-  async function del(id: string) {
-    if (!confirm("Excluir este lançamento?")) return;
-    const { error } = await supabase.from("journal_entries").delete().eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Lançamento excluído"); refresh(); }
+  async function reverseEntry() {
+    if (!reversalTarget?.id || reversalReason.trim().length < 8) {
+      toast.error("Informe uma justificativa com pelo menos 8 caracteres.");
+      return;
+    }
+    const { data, error } = await db.rpc("reverse_journal_entry", {
+      _org: orgId, _entry_id: reversalTarget.id, _reason: reversalReason.trim(),
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Estorno registrado. O lançamento original foi preservado.");
+    setReversalTarget(null); setReversalReason(""); refresh();
+    qc.invalidateQueries({ queryKey: ["contribs", orgId] });
   }
   const list = data.filter((e: any) => !q || e.description.toLowerCase().includes(q.toLowerCase()) || (e.document ?? "").toLowerCase().includes(q.toLowerCase()));
 
@@ -57,7 +68,7 @@ function Lancamentos() {
                   {e.document && <span className="text-xs text-muted-foreground">Doc. {e.document}</span>}
                   <span className="rounded bg-muted px-2 py-0.5 text-xs">{e.mode === "dobrada" ? "Dobrada" : "Simples"}</span>
                   <span className="num font-medium">{brl(total)}</span>
-                  {canWrite && <button onClick={() => del(e.id)} className="text-muted-foreground hover:text-destructive" aria-label="Excluir"><Trash2 className="h-4 w-4" /></button>}
+                  {canWrite && <button onClick={() => { setReversalTarget(e); setReversalReason(""); }} className="text-muted-foreground hover:text-destructive" aria-label="Estornar lançamento" title="Estornar lançamento"><RotateCcw className="h-4 w-4" /></button>}
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -78,6 +89,17 @@ function Lancamentos() {
           })}
         </div>
       )}
+      <Dialog open={!!reversalTarget} onOpenChange={(v) => { if (!v) { setReversalTarget(null); setReversalReason(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Estornar lançamento</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">O lançamento original não será apagado. Será criado um lançamento inverso, vinculado ao original e registrado na trilha de auditoria.</p>
+            {reversalTarget && <div className="rounded-md border bg-muted/30 p-3 text-sm"><div className="font-medium">{reversalTarget.description}</div><div className="text-xs text-muted-foreground">{fmtDate(reversalTarget.entry_date)} · {reversalTarget.id}</div></div>}
+            <div className="space-y-1"><label htmlFor="reversal-reason" className="text-sm font-medium">Justificativa obrigatória</label><Input id="reversal-reason" value={reversalReason} onChange={(e) => setReversalReason(e.target.value)} placeholder="Explique por que este lançamento será estornado" maxLength={500} /></div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setReversalTarget(null)}>Cancelar</Button><Button variant="destructive" disabled={reversalReason.trim().length < 8} onClick={reverseEntry}><RotateCcw className="mr-2 h-4 w-4" />Confirmar estorno</Button></div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Novo lançamento</DialogTitle></DialogHeader>
