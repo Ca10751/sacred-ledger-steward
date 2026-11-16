@@ -39,15 +39,15 @@ function Igreja() {
     e.preventDefault();
     const rev = accounts.find((a) => a.church_kind === f.kind);
     const cash = f.cash_id || cashAccs[0]?.id;
-    if (!rev || !cash) return toast.error("Configure as contas de receita e caixa no plano de contas");
+    if (!rev || !cash) { toast.error("Configure as contas de receita e caixa no plano de contas"); return; }
     const amount = +f.amount;
     const { data: entryId, error } = await supabase.rpc("create_journal_entry", {
       _org: orgId, _date: f.date, _description: `${kinds[f.kind]}${f.contributor ? " — " + f.contributor : ""}`, _document: "", _mode: "dobrada",
       _lines: [{ account_id: cash, debit: amount, credit: 0, congregation_id: f.congregation_id }, { account_id: rev.id, debit: 0, credit: amount, congregation_id: f.congregation_id }],
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     const { error: e2 } = await supabase.from("contributions").insert({ org_id: orgId, entry_id: entryId, kind: f.kind, contributor: f.contributor || null, amount, contribution_date: f.date, congregation_id: f.congregation_id || null });
-    if (e2) return toast.error(e2.message);
+    if (e2) { toast.error(e2.message); return; }
     toast.success("Contribuição registrada e contabilizada");
     setF({ ...f, contributor: "", amount: "" });
     ["contribs", "lines", "entries", "recent"].forEach((k) => qc.invalidateQueries({ queryKey: [k, orgId] }));
@@ -55,7 +55,7 @@ function Igreja() {
   async function addCong(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("congregations").insert({ ...cg, org_id: orgId });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setCg({ name: "", city: "", leader: "" }); qc.invalidateQueries({ queryKey: ["cong", orgId] }); toast.success("Congregação adicionada");
   }
 

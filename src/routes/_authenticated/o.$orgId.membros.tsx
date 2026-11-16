@@ -29,7 +29,7 @@ function Membros() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.rpc("add_member_by_email", { _org: orgId, _email: email, _role: role });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setEmail(""); refresh(); toast.success("Usuário adicionado");
   }
   async function change(id: string, r: Role) { const { error } = await supabase.from("organization_members").update({ role: r }).eq("id", id); if (error) toast.error(error.message); refresh(); }

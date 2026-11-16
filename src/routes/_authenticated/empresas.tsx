@@ -30,7 +30,7 @@ function Empresas() {
     e.preventDefault();
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("organizations").insert({ name, document: doc || null, type, created_by: u.user!.id });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Organização criada com plano de contas padrão");
     setOpen(false); setName(""); setDoc(""); qc.invalidateQueries({ queryKey: ["my-orgs"] });
   }

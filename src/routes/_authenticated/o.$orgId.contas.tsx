@@ -27,13 +27,13 @@ function Contas() {
   async function addAccount(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("accounts").insert({ ...a, org_id: orgId });
-    if (error) return toast.error(error.code === "23505" ? "Código já existe" : error.message);
+    if (error) { toast.error(error.code === "23505" ? "Código já existe" : error.message); return; }
     setA({ ...a, code: "", name: "" }); qc.invalidateQueries({ queryKey: ["accounts", orgId] }); toast.success("Conta criada");
   }
   async function addCC(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("cost_centers").insert({ ...c, org_id: orgId });
-    if (error) return toast.error(error.code === "23505" ? "Código já existe" : error.message);
+    if (error) { toast.error(error.code === "23505" ? "Código já existe" : error.message); return; }
     setC({ code: "", name: "" }); qc.invalidateQueries({ queryKey: ["cc", orgId] }); toast.success("Centro de custo criado");
   }
   async function delAccount(id: string) {

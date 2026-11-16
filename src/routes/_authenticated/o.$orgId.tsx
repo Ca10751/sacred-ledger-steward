@@ -7,7 +7,7 @@ import { useOrg } from "@/lib/org-data";
 
 export const Route = createFileRoute("/_authenticated/o/$orgId")({ component: OrgLayout });
 
-function Nav({ orgId, isChurch, onNav }: { orgId: string; isChurch: boolean; onNav?: () => void }) {
+function Nav({ orgId, isChurch, onNav }: { orgId: string; isChurch: boolean; onNav?: (() => void) | undefined }) {
   const items = [
     { to: "/o/$orgId", label: "Visão geral", icon: LayoutDashboard, exact: true },
     { to: "/o/$orgId/lancamentos", label: "Lançamentos", icon: BookOpen },
@@ -29,7 +29,7 @@ function Nav({ orgId, isChurch, onNav }: { orgId: string; isChurch: boolean; onN
   );
 }
 
-function SideContent({ orgId, onNav }: { orgId: string; onNav?: () => void }) {
+function SideContent({ orgId, onNav }: { orgId: string; onNav?: (() => void) | undefined }) {
   const { data: org } = useOrg(orgId);
   return (
     <div className="flex h-full flex-col bg-sidebar p-4 text-sidebar-foreground">

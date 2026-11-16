@@ -33,18 +33,18 @@ export function EntryForm({ orgId, onDone }: { orgId: string; onDone: () => void
     e.preventDefault();
     let payload: L[];
     if (mode === "simples") {
-      const l = lines[0]; const v = l.debit || l.credit;
-      payload = [{ ...l, debit: simpleNature === "D" ? v : "0", credit: simpleNature === "C" ? v : "0" }];
+      const l = lines[0]!; const v = l.debit || l.credit;
+      payload = [{ ...l, account_id: l.account_id, debit: simpleNature === "D" ? v : "0", credit: simpleNature === "C" ? v : "0" }];
     } else payload = lines.filter((l) => l.account_id && (+l.debit || +l.credit));
-    if (payload.some((l) => !l.account_id)) return toast.error("Selecione a conta");
-    if (mode === "dobrada" && diff !== 0) return toast.error("Débitos e créditos devem ser iguais");
+    if (payload.some((l) => !l.account_id)) { toast.error("Selecione a conta"); return; }
+    if (mode === "dobrada" && diff !== 0) { toast.error("Débitos e créditos devem ser iguais"); return; }
     setBusy(true);
     const { error } = await supabase.rpc("create_journal_entry", {
       _org: orgId, _date: date, _description: desc, _document: doc, _mode: mode,
       _lines: payload.map((l) => ({ ...l, debit: +l.debit || 0, credit: +l.credit || 0 })),
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Lançamento registrado"); onDone();
   }
 
@@ -81,14 +81,14 @@ export function EntryForm({ orgId, onDone }: { orgId: string; onDone: () => void
 
       {mode === "simples" ? (
         <div className="grid gap-3 rounded-md border p-3 sm:grid-cols-2">
-          {AccSelect({ l: lines[0], i: 0 })}
+          {AccSelect({ l: lines[0]!, i: 0 })}
           <div className="flex gap-2">
             <select className={sel + " w-32"} value={simpleNature} onChange={(e) => setSimpleNature(e.target.value as "D" | "C")}>
               <option value="D">Débito</option><option value="C">Crédito</option>
             </select>
-            <Input type="number" step="0.01" min="0" placeholder="Valor" className="num" value={lines[0].debit || lines[0].credit} onChange={(e) => { upd(0, "debit", e.target.value); upd(0, "credit", ""); }} required />
+            <Input type="number" step="0.01" min="0" placeholder="Valor" className="num" value={lines[0]!.debit || lines[0]!.credit} onChange={(e) => { upd(0, "debit", e.target.value); upd(0, "credit", ""); }} required />
           </div>
-          {ExtraSelects({ l: lines[0], i: 0 })}
+          {ExtraSelects({ l: lines[0]!, i: 0 })}
         </div>
       ) : (
         <div className="space-y-2">
