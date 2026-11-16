@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
-import { BarChart3, BookOpen, BookOpenCheck, Church, LayoutDashboard, ListTree, Menu, Users, ArrowLeftRight, LogOut, Settings2, CalendarDays } from "lucide-react";
+import { BarChart3, BookOpen, BookOpenCheck, Church, LayoutDashboard, ListTree, Menu, Users, ArrowLeftRight, LogOut, Settings2, CalendarDays, ContactRound, Package, Landmark, Building2, LockKeyhole } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrg } from "@/lib/org-data";
@@ -14,7 +14,14 @@ function Nav({ orgId, isChurch, onNav }: { orgId: string; isChurch: boolean; onN
     { to: "/o/$orgId/contas", label: "Plano de contas", icon: ListTree },
     { to: "/o/$orgId/relatorios", label: "Relatórios", icon: BarChart3 },
     { to: "/o/$orgId/orcamento", label: "Planejamento anual", icon: CalendarDays },
-    ...(isChurch ? [{ to: "/o/$orgId/igreja", label: "Gestão da igreja", icon: Church }] : []),
+    { to: "/o/$orgId/bancos", label: "Bancos e conciliação", icon: Landmark },
+    { to: "/o/$orgId/patrimonio", label: "Patrimônio e estoque", icon: Package },
+    { to: "/o/$orgId/institucional", label: "Dados institucionais", icon: Building2 },
+    { to: "/o/$orgId/encerramento", label: "Encerramento anual", icon: LockKeyhole },
+    ...(isChurch ? [
+      { to: "/o/$orgId/igreja", label: "Gestão da igreja", icon: Church },
+      { to: "/o/$orgId/cadastro-membros", label: "Membros da igreja", icon: ContactRound },
+    ] : []),
     { to: "/o/$orgId/membros", label: "Usuários e acessos", icon: Users },
   ] as const;
   return (
