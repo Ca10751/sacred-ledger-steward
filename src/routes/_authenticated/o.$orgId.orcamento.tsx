@@ -126,7 +126,7 @@ function AnnualBudget() {
   async function approvePlan() {
     if (!plan?.id || !isAdmin) return;
     if (!confirm("Aprovar o orçamento anual? A aprovação bloqueará a edição dos valores planejados.")) return;
-    const { error } = await db.from("annual_budget_plans").update({ status: "approved", approved_by: (await supabase.auth.getUser()).data.user?.id, approved_at: new Date().toISOString() }).eq("id", plan.id).eq("org_id", orgId).eq("status", "draft");
+    const { error } = await db.rpc("approve_annual_budget", { _org: orgId, _budget_id: plan.id });
     if (error) { toast.error(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["annual-budget-plan", orgId, year] });
     toast.success("Planejamento aprovado");
