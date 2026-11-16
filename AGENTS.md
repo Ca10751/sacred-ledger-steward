@@ -33,3 +33,5 @@ use the editor.
 - Multi-tenant isolation is enforced by RLS via is_member/can_write/is_org_admin on org_id; every org-scoped table carries org_id.
 - Journal entries are created only through the create_journal_entry RPC so balance validation and lines insert stay atomic.
 - Reports (DRE, balancete, razonetes) are computed client-side by pure functions in src/lib/reports.ts (tested).
+- Financial/stock state changes (contributions, reversals, fiscal-year closing, bank import/reconciliation, inventory movements, budget/inventory approvals) go through SECURITY-checked RPCs so validation and history stay transactional; movements/reversals/closings have no direct write grants.
+- Closed fiscal years are locked by triggers on journal_entries/journal_lines (is_period_closed); corrections use reverse_journal_entry, never deletes.
