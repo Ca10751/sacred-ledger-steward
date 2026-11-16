@@ -28,6 +28,7 @@ function AnnualBudget() {
   const [selectedCongregation, setSelectedCongregation] = useState("");
   const [description, setDescription] = useState("");
   const [monthly, setMonthly] = useState<string[]>(emptyMonths());
+  const [editingItem, setEditingItem] = useState<string | null>(null);
   const { data: role } = useMyRole(orgId);
   const canWrite = role === "admin" || role === "contador";
   const isAdmin = role === "admin";
@@ -92,15 +93,27 @@ function AnnualBudget() {
     if (!plan?.id || !selectedAccount) return;
     const values = monthly.map((v) => Math.max(0, Number(v) || 0));
     if (values.every((v) => v === 0)) { toast.error("Informe o orçamento de pelo menos um mês"); return; }
-    const { error } = await db.from("annual_budget_items").insert({
+    const payload = {
       org_id: orgId, budget_id: plan.id, account_id: selectedAccount,
       cost_center_id: selectedCostCenter || null, congregation_id: selectedCongregation || null,
       description: description.trim() || null, monthly_values: values,
-    });
-    if (error) { toast.error(error.message); return; }
-    setSelectedAccount(""); setSelectedCostCenter(""); setSelectedCongregation(""); setDescription(""); setMonthly(emptyMonths());
+    };
+    const result = editingItem
+      ? await db.from("annual_budget_items").update(payload).eq("id", editingItem).eq("org_id", orgId)
+      : await db.from("annual_budget_items").insert(payload);
+    if (result.error) { toast.error(result.error.message); return; }
+    setSelectedAccount(""); setSelectedCostCenter(""); setSelectedCongregation(""); setDescription(""); setMonthly(emptyMonths()); setEditingItem(null);
     await qc.invalidateQueries({ queryKey: ["annual-budget-items", orgId, plan.id] });
-    toast.success("Categoria adicionada ao planejamento");
+    toast.success(editingItem ? "Categoria atualizada" : "Categoria adicionada ao planejamento");
+  }
+
+  function editItem(item: any) {
+    const values = Array.isArray(item.monthly_values)
+      ? item.monthly_values.map((v: unknown) => String(v ?? ""))
+      : Array.from({ length: 12 }, (_, i) => String(item.monthly_values?.[String(i + 1)] ?? ""));
+    setEditingItem(item.id); setSelectedAccount(item.account_id); setSelectedCostCenter(item.cost_center_id ?? "");
+    setSelectedCongregation(item.congregation_id ?? ""); setDescription(item.description ?? ""); setMonthly(values);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function removeItem(id: string) {
@@ -149,7 +162,7 @@ function AnnualBudget() {
 
           {canWrite && !approved && (
             <form onSubmit={addItem} className="space-y-4 rounded-xl border bg-card p-4">
-              <div><h2 className="font-semibold">Adicionar categoria ao orçamento</h2><p className="text-xs text-muted-foreground">O valor realizado será calculado automaticamente pelos lançamentos de despesas.</p></div>
+              <div><h2 className="font-semibold">{editingItem ? "Editar categoria do orçamento" : "Adicionar categoria ao orçamento"}</h2><p className="text-xs text-muted-foreground">O valor realizado será calculado automaticamente pelos lançamentos de despesas.</p></div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="space-y-1"><Label>Conta de despesa</Label><select required value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"><option value="">Selecione</option>{expenseAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}</select></div>
                 <div className="space-y-1"><Label>Centro de custo</Label><select value={selectedCostCenter} onChange={(e) => setSelectedCostCenter(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"><option value="">Todos</option>{costCenters.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}</select></div>
@@ -159,7 +172,7 @@ function AnnualBudget() {
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {monthNames.map((m, i) => <div key={m} className="space-y-1"><Label>{m}</Label><Input type="number" min="0" step="0.01" placeholder="R$ 0,00" value={monthly[i]} onChange={(e) => setMonthly((old) => old.map((v, n) => n === i ? e.target.value : v))} /></div>)}
               </div>
-              <div className="flex justify-end"><Button type="submit"><Plus className="mr-2 h-4 w-4" />Adicionar ao orçamento</Button></div>
+              <div className="flex justify-end"><Button type="submit"><Plus className="mr-2 h-4 w-4" />{editingItem ? "Salvar alterações" : "Adicionar ao orçamento"}</Button>{editingItem && <Button type="button" variant="outline" onClick={() => { setEditingItem(null); setSelectedAccount(""); setSelectedCostCenter(""); setSelectedCongregation(""); setDescription(""); setMonthly(emptyMonths()); }}>Cancelar edição</Button>}</div>
             </form>
           )}
 
@@ -175,7 +188,7 @@ function AnnualBudget() {
           <div className="overflow-x-auto rounded-xl border bg-card">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3"><div><h2 className="font-semibold">Orçamento por categoria</h2><p className="text-xs text-muted-foreground">Detalhamento anual por conta, centro de custo e congregação</p></div>{isAdmin && plan.status === "draft" && <Button size="sm" onClick={approvePlan}><CheckCircle2 className="mr-2 h-4 w-4" />Aprovar planejamento</Button>}</div>
             <table className="w-full min-w-[760px] text-sm"><thead className="bg-muted/50 text-left text-xs text-muted-foreground"><tr><th className="px-4 py-3">Categoria</th><th className="px-4 py-3">Centro / congregação</th><th className="px-4 py-3 text-right">Previsto</th><th className="px-4 py-3 text-right">Realizado</th><th className="px-4 py-3 text-right">Saldo</th><th className="px-4 py-3" /></tr></thead><tbody>
-              {rows.map((r: any) => <tr key={r.id} className="border-t"><td className="px-4 py-2.5"><div className="font-medium">{r.accounts?.name ?? "Conta"}</div><div className="text-xs text-muted-foreground">{r.accounts?.code} {r.description ? `· ${r.description}` : ""}</div></td><td className="px-4 py-2.5 text-muted-foreground">{[r.cost_centers?.name, r.congregations?.name].filter(Boolean).join(" · ") || "Geral"}</td><td className="num px-4 py-2.5 text-right">{brl(r.plannedTotal)}</td><td className="num px-4 py-2.5 text-right">{brl(r.actualTotal)}</td><td className={`num px-4 py-2.5 text-right font-medium ${r.actualTotal > r.plannedTotal ? "text-destructive" : ""}`}>{brl(r.plannedTotal - r.actualTotal)}</td><td className="px-4 py-2.5 text-right">{canWrite && !approved && <button className="text-xs text-destructive hover:underline" onClick={() => removeItem(r.id)}>Remover</button>}</td></tr>)}
+              {rows.map((r: any) => <tr key={r.id} className="border-t"><td className="px-4 py-2.5"><div className="font-medium">{r.accounts?.name ?? "Conta"}</div><div className="text-xs text-muted-foreground">{r.accounts?.code} {r.description ? `· ${r.description}` : ""}</div></td><td className="px-4 py-2.5 text-muted-foreground">{[r.cost_centers?.name, r.congregations?.name].filter(Boolean).join(" · ") || "Geral"}</td><td className="num px-4 py-2.5 text-right">{brl(r.plannedTotal)}</td><td className="num px-4 py-2.5 text-right">{brl(r.actualTotal)}</td><td className={`num px-4 py-2.5 text-right font-medium ${r.actualTotal > r.plannedTotal ? "text-destructive" : ""}`}>{brl(r.plannedTotal - r.actualTotal)}</td><td className="px-4 py-2.5 text-right">{canWrite && !approved && <div className="flex justify-end gap-2"><button className="text-xs hover:underline" onClick={() => editItem(r)}>Editar</button><button className="text-xs text-destructive hover:underline" onClick={() => removeItem(r.id)}>Remover</button></div>}</td></tr>)}
               {rows.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhuma categoria cadastrada no planejamento.</td></tr>}
             </tbody></table>
           </div>
