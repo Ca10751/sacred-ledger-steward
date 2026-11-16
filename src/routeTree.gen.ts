@@ -15,10 +15,16 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
 import { Route as AuthenticatedOOrgIdRouteImport } from './routes/_authenticated/o.$orgId'
 import { Route as AuthenticatedOOrgIdIndexRouteImport } from './routes/_authenticated/o.$orgId.index'
+import { Route as AuthenticatedOOrgIdBancosRouteImport } from './routes/_authenticated/o.$orgId.bancos'
+import { Route as AuthenticatedOOrgIdCadastroMembrosRouteImport } from './routes/_authenticated/o.$orgId.cadastro-membros'
 import { Route as AuthenticatedOOrgIdContasRouteImport } from './routes/_authenticated/o.$orgId.contas'
+import { Route as AuthenticatedOOrgIdEncerramentoRouteImport } from './routes/_authenticated/o.$orgId.encerramento'
 import { Route as AuthenticatedOOrgIdIgrejaRouteImport } from './routes/_authenticated/o.$orgId.igreja'
+import { Route as AuthenticatedOOrgIdInstitucionalRouteImport } from './routes/_authenticated/o.$orgId.institucional'
 import { Route as AuthenticatedOOrgIdLancamentosRouteImport } from './routes/_authenticated/o.$orgId.lancamentos'
 import { Route as AuthenticatedOOrgIdMembrosRouteImport } from './routes/_authenticated/o.$orgId.membros'
+import { Route as AuthenticatedOOrgIdOrcamentoRouteImport } from './routes/_authenticated/o.$orgId.orcamento'
+import { Route as AuthenticatedOOrgIdPatrimonioRouteImport } from './routes/_authenticated/o.$orgId.patrimonio'
 import { Route as AuthenticatedOOrgIdRelatoriosRouteImport } from './routes/_authenticated/o.$orgId.relatorios'
 
 const IndexRoute = IndexRouteImport.update({
@@ -51,16 +57,40 @@ const AuthenticatedOOrgIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedOOrgIdRoute,
   } as any)
+const AuthenticatedOOrgIdBancosRoute =
+  AuthenticatedOOrgIdBancosRouteImport.update({
+    id: '/bancos',
+    path: '/bancos',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
+const AuthenticatedOOrgIdCadastroMembrosRoute =
+  AuthenticatedOOrgIdCadastroMembrosRouteImport.update({
+    id: '/cadastro-membros',
+    path: '/cadastro-membros',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
 const AuthenticatedOOrgIdContasRoute =
   AuthenticatedOOrgIdContasRouteImport.update({
     id: '/contas',
     path: '/contas',
     getParentRoute: () => AuthenticatedOOrgIdRoute,
   } as any)
+const AuthenticatedOOrgIdEncerramentoRoute =
+  AuthenticatedOOrgIdEncerramentoRouteImport.update({
+    id: '/encerramento',
+    path: '/encerramento',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
 const AuthenticatedOOrgIdIgrejaRoute =
   AuthenticatedOOrgIdIgrejaRouteImport.update({
     id: '/igreja',
     path: '/igreja',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
+const AuthenticatedOOrgIdInstitucionalRoute =
+  AuthenticatedOOrgIdInstitucionalRouteImport.update({
+    id: '/institucional',
+    path: '/institucional',
     getParentRoute: () => AuthenticatedOOrgIdRoute,
   } as any)
 const AuthenticatedOOrgIdLancamentosRoute =
@@ -75,6 +105,18 @@ const AuthenticatedOOrgIdMembrosRoute =
     path: '/membros',
     getParentRoute: () => AuthenticatedOOrgIdRoute,
   } as any)
+const AuthenticatedOOrgIdOrcamentoRoute =
+  AuthenticatedOOrgIdOrcamentoRouteImport.update({
+    id: '/orcamento',
+    path: '/orcamento',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
+const AuthenticatedOOrgIdPatrimonioRoute =
+  AuthenticatedOOrgIdPatrimonioRouteImport.update({
+    id: '/patrimonio',
+    path: '/patrimonio',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
 const AuthenticatedOOrgIdRelatoriosRoute =
   AuthenticatedOOrgIdRelatoriosRouteImport.update({
     id: '/relatorios',
@@ -87,10 +129,16 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/o/$orgId': typeof AuthenticatedOOrgIdRouteWithChildren
+  '/o/$orgId/bancos': typeof AuthenticatedOOrgIdBancosRoute
+  '/o/$orgId/cadastro-membros': typeof AuthenticatedOOrgIdCadastroMembrosRoute
   '/o/$orgId/contas': typeof AuthenticatedOOrgIdContasRoute
+  '/o/$orgId/encerramento': typeof AuthenticatedOOrgIdEncerramentoRoute
   '/o/$orgId/igreja': typeof AuthenticatedOOrgIdIgrejaRoute
+  '/o/$orgId/institucional': typeof AuthenticatedOOrgIdInstitucionalRoute
   '/o/$orgId/lancamentos': typeof AuthenticatedOOrgIdLancamentosRoute
   '/o/$orgId/membros': typeof AuthenticatedOOrgIdMembrosRoute
+  '/o/$orgId/orcamento': typeof AuthenticatedOOrgIdOrcamentoRoute
+  '/o/$orgId/patrimonio': typeof AuthenticatedOOrgIdPatrimonioRoute
   '/o/$orgId/relatorios': typeof AuthenticatedOOrgIdRelatoriosRoute
   '/o/$orgId/': typeof AuthenticatedOOrgIdIndexRoute
 }
@@ -98,10 +146,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
+  '/o/$orgId/bancos': typeof AuthenticatedOOrgIdBancosRoute
+  '/o/$orgId/cadastro-membros': typeof AuthenticatedOOrgIdCadastroMembrosRoute
   '/o/$orgId/contas': typeof AuthenticatedOOrgIdContasRoute
+  '/o/$orgId/encerramento': typeof AuthenticatedOOrgIdEncerramentoRoute
   '/o/$orgId/igreja': typeof AuthenticatedOOrgIdIgrejaRoute
+  '/o/$orgId/institucional': typeof AuthenticatedOOrgIdInstitucionalRoute
   '/o/$orgId/lancamentos': typeof AuthenticatedOOrgIdLancamentosRoute
   '/o/$orgId/membros': typeof AuthenticatedOOrgIdMembrosRoute
+  '/o/$orgId/orcamento': typeof AuthenticatedOOrgIdOrcamentoRoute
+  '/o/$orgId/patrimonio': typeof AuthenticatedOOrgIdPatrimonioRoute
   '/o/$orgId/relatorios': typeof AuthenticatedOOrgIdRelatoriosRoute
   '/o/$orgId': typeof AuthenticatedOOrgIdIndexRoute
 }
@@ -112,10 +166,16 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/empresas': typeof AuthenticatedEmpresasRoute
   '/_authenticated/o/$orgId': typeof AuthenticatedOOrgIdRouteWithChildren
+  '/_authenticated/o/$orgId/bancos': typeof AuthenticatedOOrgIdBancosRoute
+  '/_authenticated/o/$orgId/cadastro-membros': typeof AuthenticatedOOrgIdCadastroMembrosRoute
   '/_authenticated/o/$orgId/contas': typeof AuthenticatedOOrgIdContasRoute
+  '/_authenticated/o/$orgId/encerramento': typeof AuthenticatedOOrgIdEncerramentoRoute
   '/_authenticated/o/$orgId/igreja': typeof AuthenticatedOOrgIdIgrejaRoute
+  '/_authenticated/o/$orgId/institucional': typeof AuthenticatedOOrgIdInstitucionalRoute
   '/_authenticated/o/$orgId/lancamentos': typeof AuthenticatedOOrgIdLancamentosRoute
   '/_authenticated/o/$orgId/membros': typeof AuthenticatedOOrgIdMembrosRoute
+  '/_authenticated/o/$orgId/orcamento': typeof AuthenticatedOOrgIdOrcamentoRoute
+  '/_authenticated/o/$orgId/patrimonio': typeof AuthenticatedOOrgIdPatrimonioRoute
   '/_authenticated/o/$orgId/relatorios': typeof AuthenticatedOOrgIdRelatoriosRoute
   '/_authenticated/o/$orgId/': typeof AuthenticatedOOrgIdIndexRoute
 }
@@ -126,10 +186,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/empresas'
     | '/o/$orgId'
+    | '/o/$orgId/bancos'
+    | '/o/$orgId/cadastro-membros'
     | '/o/$orgId/contas'
+    | '/o/$orgId/encerramento'
     | '/o/$orgId/igreja'
+    | '/o/$orgId/institucional'
     | '/o/$orgId/lancamentos'
     | '/o/$orgId/membros'
+    | '/o/$orgId/orcamento'
+    | '/o/$orgId/patrimonio'
     | '/o/$orgId/relatorios'
     | '/o/$orgId/'
   fileRoutesByTo: FileRoutesByTo
@@ -137,10 +203,16 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/empresas'
+    | '/o/$orgId/bancos'
+    | '/o/$orgId/cadastro-membros'
     | '/o/$orgId/contas'
+    | '/o/$orgId/encerramento'
     | '/o/$orgId/igreja'
+    | '/o/$orgId/institucional'
     | '/o/$orgId/lancamentos'
     | '/o/$orgId/membros'
+    | '/o/$orgId/orcamento'
+    | '/o/$orgId/patrimonio'
     | '/o/$orgId/relatorios'
     | '/o/$orgId'
   id:
@@ -150,10 +222,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/empresas'
     | '/_authenticated/o/$orgId'
+    | '/_authenticated/o/$orgId/bancos'
+    | '/_authenticated/o/$orgId/cadastro-membros'
     | '/_authenticated/o/$orgId/contas'
+    | '/_authenticated/o/$orgId/encerramento'
     | '/_authenticated/o/$orgId/igreja'
+    | '/_authenticated/o/$orgId/institucional'
     | '/_authenticated/o/$orgId/lancamentos'
     | '/_authenticated/o/$orgId/membros'
+    | '/_authenticated/o/$orgId/orcamento'
+    | '/_authenticated/o/$orgId/patrimonio'
     | '/_authenticated/o/$orgId/relatorios'
     | '/_authenticated/o/$orgId/'
   fileRoutesById: FileRoutesById
@@ -208,6 +286,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOOrgIdIndexRouteImport
       parentRoute: typeof AuthenticatedOOrgIdRoute
     }
+    '/_authenticated/o/$orgId/bancos': {
+      id: '/_authenticated/o/$orgId/bancos'
+      path: '/bancos'
+      fullPath: '/o/$orgId/bancos'
+      preLoaderRoute: typeof AuthenticatedOOrgIdBancosRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
+    '/_authenticated/o/$orgId/cadastro-membros': {
+      id: '/_authenticated/o/$orgId/cadastro-membros'
+      path: '/cadastro-membros'
+      fullPath: '/o/$orgId/cadastro-membros'
+      preLoaderRoute: typeof AuthenticatedOOrgIdCadastroMembrosRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
     '/_authenticated/o/$orgId/contas': {
       id: '/_authenticated/o/$orgId/contas'
       path: '/contas'
@@ -215,11 +307,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOOrgIdContasRouteImport
       parentRoute: typeof AuthenticatedOOrgIdRoute
     }
+    '/_authenticated/o/$orgId/encerramento': {
+      id: '/_authenticated/o/$orgId/encerramento'
+      path: '/encerramento'
+      fullPath: '/o/$orgId/encerramento'
+      preLoaderRoute: typeof AuthenticatedOOrgIdEncerramentoRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
     '/_authenticated/o/$orgId/igreja': {
       id: '/_authenticated/o/$orgId/igreja'
       path: '/igreja'
       fullPath: '/o/$orgId/igreja'
       preLoaderRoute: typeof AuthenticatedOOrgIdIgrejaRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
+    '/_authenticated/o/$orgId/institucional': {
+      id: '/_authenticated/o/$orgId/institucional'
+      path: '/institucional'
+      fullPath: '/o/$orgId/institucional'
+      preLoaderRoute: typeof AuthenticatedOOrgIdInstitucionalRouteImport
       parentRoute: typeof AuthenticatedOOrgIdRoute
     }
     '/_authenticated/o/$orgId/lancamentos': {
@@ -236,6 +342,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOOrgIdMembrosRouteImport
       parentRoute: typeof AuthenticatedOOrgIdRoute
     }
+    '/_authenticated/o/$orgId/orcamento': {
+      id: '/_authenticated/o/$orgId/orcamento'
+      path: '/orcamento'
+      fullPath: '/o/$orgId/orcamento'
+      preLoaderRoute: typeof AuthenticatedOOrgIdOrcamentoRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
+    '/_authenticated/o/$orgId/patrimonio': {
+      id: '/_authenticated/o/$orgId/patrimonio'
+      path: '/patrimonio'
+      fullPath: '/o/$orgId/patrimonio'
+      preLoaderRoute: typeof AuthenticatedOOrgIdPatrimonioRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
     '/_authenticated/o/$orgId/relatorios': {
       id: '/_authenticated/o/$orgId/relatorios'
       path: '/relatorios'
@@ -247,19 +367,32 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedOOrgIdRouteChildren {
+  AuthenticatedOOrgIdBancosRoute: typeof AuthenticatedOOrgIdBancosRoute
+  AuthenticatedOOrgIdCadastroMembrosRoute: typeof AuthenticatedOOrgIdCadastroMembrosRoute
   AuthenticatedOOrgIdContasRoute: typeof AuthenticatedOOrgIdContasRoute
+  AuthenticatedOOrgIdEncerramentoRoute: typeof AuthenticatedOOrgIdEncerramentoRoute
   AuthenticatedOOrgIdIgrejaRoute: typeof AuthenticatedOOrgIdIgrejaRoute
+  AuthenticatedOOrgIdInstitucionalRoute: typeof AuthenticatedOOrgIdInstitucionalRoute
   AuthenticatedOOrgIdLancamentosRoute: typeof AuthenticatedOOrgIdLancamentosRoute
   AuthenticatedOOrgIdMembrosRoute: typeof AuthenticatedOOrgIdMembrosRoute
+  AuthenticatedOOrgIdOrcamentoRoute: typeof AuthenticatedOOrgIdOrcamentoRoute
+  AuthenticatedOOrgIdPatrimonioRoute: typeof AuthenticatedOOrgIdPatrimonioRoute
   AuthenticatedOOrgIdRelatoriosRoute: typeof AuthenticatedOOrgIdRelatoriosRoute
   AuthenticatedOOrgIdIndexRoute: typeof AuthenticatedOOrgIdIndexRoute
 }
 
 const AuthenticatedOOrgIdRouteChildren: AuthenticatedOOrgIdRouteChildren = {
+  AuthenticatedOOrgIdBancosRoute: AuthenticatedOOrgIdBancosRoute,
+  AuthenticatedOOrgIdCadastroMembrosRoute:
+    AuthenticatedOOrgIdCadastroMembrosRoute,
   AuthenticatedOOrgIdContasRoute: AuthenticatedOOrgIdContasRoute,
+  AuthenticatedOOrgIdEncerramentoRoute: AuthenticatedOOrgIdEncerramentoRoute,
   AuthenticatedOOrgIdIgrejaRoute: AuthenticatedOOrgIdIgrejaRoute,
+  AuthenticatedOOrgIdInstitucionalRoute: AuthenticatedOOrgIdInstitucionalRoute,
   AuthenticatedOOrgIdLancamentosRoute: AuthenticatedOOrgIdLancamentosRoute,
   AuthenticatedOOrgIdMembrosRoute: AuthenticatedOOrgIdMembrosRoute,
+  AuthenticatedOOrgIdOrcamentoRoute: AuthenticatedOOrgIdOrcamentoRoute,
+  AuthenticatedOOrgIdPatrimonioRoute: AuthenticatedOOrgIdPatrimonioRoute,
   AuthenticatedOOrgIdRelatoriosRoute: AuthenticatedOOrgIdRelatoriosRoute,
   AuthenticatedOOrgIdIndexRoute: AuthenticatedOOrgIdIndexRoute,
 }
