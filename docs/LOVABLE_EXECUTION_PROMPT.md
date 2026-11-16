@@ -1,10 +1,10 @@
 # Prompt único de implantação no Lovable Cloud
 
-Copie o texto abaixo no Agent do projeto Sacred Ledger no Lovable. O repositório já contém as telas e a especificação em docs/LOVABLE_IMPLEMENTATION_SPEC.md. Execute primeiro uma auditoria do banco atual e depois implemente as alterações sem apagar dados.
+Copie o texto abaixo no Agent do projeto Sapucaí Tropicalis no Lovable. O repositório já contém as telas e a especificação em docs/LOVABLE_IMPLEMENTATION_SPEC.md. Execute primeiro uma auditoria do banco atual e depois implemente as alterações sem apagar dados.
 
 ---
 
-Você está trabalhando no projeto Sacred Ledger conectado ao Lovable Cloud. Leia integralmente AGENTS.md e docs/LOVABLE_IMPLEMENTATION_SPEC.md, inspecione o schema real do banco, RLS, funções RPC, relacionamentos, tipos gerados e todas as rotas já existentes antes de alterar qualquer coisa.
+Você está trabalhando no projeto Sapucaí Tropicalis conectado ao Lovable Cloud. Leia integralmente AGENTS.md e docs/LOVABLE_IMPLEMENTATION_SPEC.md, inspecione o schema real do banco, RLS, funções RPC, relacionamentos, tipos gerados e todas as rotas já existentes antes de alterar qualquer coisa.
 
 OBJETIVO: concluir a integração backend das telas de gestão contábil, financeira, patrimonial e administrativa para igrejas.
 
@@ -34,7 +34,7 @@ Implemente integralmente os schemas e contratos descritos nas seções 1 a 14 de
 - fixed_assets, inventory_items, inventory_movements, physical_inventory_sessions e physical_inventory_counts;
 - bank_accounts, bank_statements e bank_statement_lines;
 - journal_entry_reversals e fiscal_year_closings;
-- RPCs create_contribution, reverse_journal_entry, close_fiscal_year, import_bank_statement e approve_physical_inventory;
+- RPCs create_contribution, reverse_journal_entry, close_fiscal_year, import_bank_statement, approve_physical_inventory, approve_annual_budget, record_inventory_movement, submit_physical_inventory e reconcile_bank_statement_line;
 - políticas RLS, constraints, índices, validações de referências cruzadas e auditoria.
 
 Para tabelas existentes, adicione colunas de forma compatível e nullable quando necessário. Backfill apenas quando o valor puder ser determinado com segurança. Não invente CNPJ, endereço, nome de membro, saldos ou dados históricos.
@@ -82,3 +82,9 @@ Ao terminar, informe:
 5. pendências, riscos e qualquer ação manual necessária;
 6. confirmação de que dados existentes foram preservados.
 Não faça deploy nem merge sem autorização explícita.
+
+
+## Identidade visual e nome do produto
+- O nome exibido do produto é **Sapucaí Tropicalis**.
+- Preserve o símbolo, a marca gráfica, ícones, cores, tipografia e layout já existentes. Não redesenhe nem substitua a logo; altere apenas os textos de marca.
+- Não altere o identificador técnico do projeto Lovable, URLs, IDs, nome de repositório, tabelas, schemas ou dados de usuários como parte da mudança de marca.
