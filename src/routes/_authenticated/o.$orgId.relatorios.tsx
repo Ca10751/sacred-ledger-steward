@@ -22,17 +22,19 @@ function Relatorios() {
   const dre = income(accounts, lines, from, to);
   const tb = trialBalance(accounts, lines, from, to);
   const bp = balanceSheet(accounts, lines, to);
-  const exportCsv = () => {
-    downloadCsv(`dre-${from}-${to}.csv`, ["Tipo", "Código", "Conta", "Valor"], [
-      ...dre.receitas.map((x) => ["Receita", x.account.code, x.account.name, x.value]),
-      ...dre.despesas.map((x) => ["Despesa", x.account.code, x.account.name, x.value]),
-    ]);
-    downloadCsv(`balancete-${from}-${to}.csv`, ["Código", "Conta", "Saldo anterior", "Débitos", "Créditos", "Saldo atual"], tb.rows.map((x) => [x.account.code, x.account.name, x.opening, x.debit, x.credit, x.closing]));
-    downloadCsv(`balanco-${to}.csv`, ["Grupo", "Código", "Conta", "Saldo"], bp.rows.map((x) => [x.account.type, x.account.code, x.account.name, x.balance]));
-  };
+  const exportDreCsv = () => downloadCsv(`dre-${from}-${to}.csv`, ["Tipo", "Código", "Conta", "Valor"], [
+    ...dre.receitas.map((x) => ["Receita", x.account.code, x.account.name, x.value]),
+    ...dre.despesas.map((x) => ["Despesa", x.account.code, x.account.name, x.value]),
+  ]);
+  const exportTrialCsv = () => downloadCsv(`balancete-${from}-${to}.csv`, ["Código", "Conta", "Saldo anterior", "Débitos", "Créditos", "Saldo atual"], tb.rows.map((x) => [x.account.code, x.account.name, x.opening, x.debit, x.credit, x.closing]));
+  const exportBalanceCsv = () => downloadCsv(`balanco-${to}.csv`, ["Grupo", "Código", "Conta", "Saldo"], bp.rows.map((x) => [x.account.type, x.account.code, x.account.name, x.balance]));
+  const exportLinesCsv = () => downloadCsv(`lancamentos-${from}-${to}.csv`, ["Data", "Código", "Conta", "Débito", "Crédito", "Congregação", "Centro de custo"], lines.filter((l) => l.date >= from && l.date <= to).map((l) => {
+    const account = accounts.find((a) => a.id === l.account_id);
+    return [l.date, account?.code ?? "", account?.name ?? "", l.debit, l.credit, l.congregation_id ?? "", l.cost_center_id ?? ""];
+  }));
   return (
     <>
-      <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<div className="flex gap-2"><Button variant="outline" onClick={exportCsv}><Download className="mr-1.5 h-4 w-4" />Exportar CSV</Button><Button variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button></div>} />
+      <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={exportDreCsv}>CSV DRE</Button><Button size="sm" variant="outline" onClick={exportTrialCsv}>CSV Balancete</Button><Button size="sm" variant="outline" onClick={exportBalanceCsv}>CSV BP</Button><Button size="sm" variant="outline" onClick={exportLinesCsv}>CSV Lançamentos</Button><Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button></div>} />
       <div className="no-print mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <PeriodPicker from={from} to={to} onChange={(f, t) => setP({ from: f, to: t })} />
         <select value={cc} onChange={(e) => setCc(e.target.value)} className="h-9 rounded-md border border-input bg-card px-2 text-sm">
