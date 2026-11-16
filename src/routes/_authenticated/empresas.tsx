@@ -2,12 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Building2, Church, LogOut, Plus, ChevronRight, BookOpenCheck } from "lucide-react";
+import { Building2, Church, LogOut, Plus, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/_authenticated/empresas")({
   head: () => ({ meta: [{ title: "Organizações — Sapucaí Tropicalis" }, { name: "description", content: "Selecione a empresa ou igreja para trabalhar." }] }),
@@ -39,7 +40,7 @@ function Empresas() {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-2 font-semibold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground"><BookOpenCheck className="h-5 w-5" /></span>Sapucaí Tropicalis</div>
+          <BrandLogo className="h-12 w-auto max-w-[230px]" />
           <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}><LogOut className="mr-1.5 h-4 w-4" />Sair</Button>
         </div>
       </header>
