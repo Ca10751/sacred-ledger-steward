@@ -14,7 +14,7 @@ import { brl, fmtDate } from "@/lib/reports";
 export const Route = createFileRoute("/_authenticated/o/$orgId/bancos")({ component: Bancos });
 function parseCsv(text:string){const first=text.split(/\r?\n/).find(x=>x.trim())??"";const delimiter=(first.match(/;/g)?.length??0)>(first.match(/,/g)?.length??0)?";":",";return text.split(/\r?\n/).filter(x=>x.trim()).map(line=>{const out:string[]=[];let cur="",quoted=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++;}else quoted=!quoted;}else if(ch===delimiter&&!quoted){out.push(cur.trim());cur="";}else cur+=ch;}out.push(cur.trim());return out;});}
 function money(value: string) {
- const raw = value.trim().replace(/[R$\\s]/g, "").replace(/[()]/g, "");
+ const raw = value.trim().replace(/[R$\s]/g, "").replace(/[()]/g, "");
  if (!raw) return 0;
  const negative = value.includes("-") || (value.includes("(") && value.includes(")"));
  const normalized = raw.replace(/-/g, "");
