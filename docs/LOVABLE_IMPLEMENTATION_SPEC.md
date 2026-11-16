@@ -111,3 +111,58 @@ Além do esquema já descrito, separar cadastro de membros da tabela organizatio
 - Estoque: saldo é soma de movimentos; transferências não alteram saldo consolidado; inventário registra diferenças e autorizações.
 - Bancos: importação idempotente; conciliação não altera lançamentos originais; diferença não conciliada permanece visível.
 - Toda operação sensível registra usuário, data, organização e motivo quando aplicável.
+
+## 13. RPCs transacionais e controles obrigatórios para integração das telas
+
+### 13.1 Registro de contribuição com lançamento atômico
+Criar RPC create_contribution(_org uuid, _date date, _kind contribution_kind, _member_id uuid, _contributor text, _amount numeric, _congregation_id uuid, _cash_account_id uuid, _revenue_account_id uuid) RETURNS uuid:
+- Exigir can_write(_org), valor maior que zero, contas analíticas pertencentes à organização e tipos compatíveis (ativo para caixa/banco; receita para contrapartida).
+- Se _member_id não for nulo, validar que o membro pertence à mesma organização e está ativo.
+- Validar congregação da mesma organização.
+- Criar o lançamento e inserir a linha em contributions com entry_id e member_id dentro da mesma transação.
+- Retornar o ID do registro contributions. Qualquer falha deve reverter lançamento e contribuição juntos.
+- A tela não deve chamar create_journal_entry e depois fazer INSERT separado.
+
+### 13.2 Estorno integral e proteção do livro diário
+- Revogar DELETE de journal_entries e journal_lines para authenticated; remover políticas RLS de exclusão física dessas tabelas.
+- Proteger também UPDATE direto de journal_entries e journal_lines; alterações em lançamento contabilizado devem ocorrer por fluxo formal auditado.
+- RPC reverse_journal_entry(_org uuid, _entry_id uuid, _reason text) RETURNS uuid deve bloquear a linha original (FOR UPDATE), validar que não foi estornada, criar lançamento inverso com todas as dimensões e valores invertidos e registrar journal_entry_reversals.
+- O lançamento de estorno deve referenciar o original no histórico e preservar data/memo/documento de origem; usar data permitida pelo período contábil e exigir justificativa não vazia (mínimo 8 caracteres).
+- Criar FK/índices e unicidade para impedir dois estornos integrais do mesmo original.
+- contributions ligadas ao lançamento original não devem ser apagadas. Relatórios devem considerar original e estorno, resultando em efeito líquido zero.
+- Bloquear estorno de lançamento já estornado, de estorno de estorno e de lançamento pertencente a outra organização.
+
+### 13.3 Fechamento de exercício
+- close_fiscal_year(_org uuid, _year integer, _profit_loss_account_id uuid, _notes text) deve ser atômica, validar permissão, ano encerrado/duplicidade, conta de patrimônio da mesma organização e equilíbrio dos lançamentos.
+- Apurar receitas e despesas por natureza contábil, zerar saldos das contas de resultado e transferir superávit/déficit para conta patrimonial informada.
+- Registrar closing_entry_id, usuário, data, ano, conta de destinação e notas. Bloquear novos lançamentos no exercício encerrado, salvo fluxo administrativo explícito de reabertura auditada.
+- Não aceitar fechamento do exercício corrente ou futuro pela interface padrão.
+
+### 13.4 Importação idempotente de extratos
+Criar RPC import_bank_statement(_org uuid, _bank_account_id uuid, _statement_date date, _opening_balance numeric, _closing_balance numeric, _import_source text, _rows jsonb) RETURNS uuid:
+- Validar conta bancária da organização e can_write.
+- Criar cabeçalho do extrato e linhas em transação.
+- Normalizar identificador externo/hash com data, valor, descrição e documento; evitar duplicação em reimportação.
+- Validar datas, valores e direção; nunca criar lançamentos contábeis automaticamente.
+- Retornar o ID do extrato e disponibilizar contagens de linhas importadas/ignoradas.
+- Conciliação deve vincular bank_statement_lines a journal_lines da mesma organização e impedir vínculo duplicado indevido.
+
+### 13.5 Inventário físico
+- physical_inventory_sessions: org_id, reference_date, congregation_id opcional, status (draft/submitted/approved), notes, created_by, approved_by, approved_at.
+- physical_inventory_counts: org_id, session_id, item_id, expected_quantity, counted_quantity, variance, notes.
+- Criar tela para iniciar contagem, informar quantidades físicas, visualizar divergências e submeter para aprovação administrativa.
+- Somente aprovação autorizada pode gerar movimentos ajuste; nunca editar/apagar movimentos anteriores.
+- Validar referências de sessão, item e congregação dentro da mesma organização.
+
+## 14. Contrato de integração das telas adicionadas
+As rotas adicionadas nesta branch dependem das tabelas e contratos acima:
+- /o/:orgId/cadastro-membros → church_members, leitura e CRUD com inativação (sem exclusão física).
+- /o/:orgId/patrimonio → fixed_assets, inventory_items, inventory_movements e inventário físico.
+- /o/:orgId/bancos → bank_accounts, bank_statements, bank_statement_lines, import_bank_statement.
+- /o/:orgId/institucional → campos institucionais de organizations.
+- /o/:orgId/encerramento → fiscal_year_closings, close_fiscal_year.
+- /o/:orgId/igreja → create_contribution e contributions.member_id.
+- /o/:orgId/lancamentos → reverse_journal_entry; nenhuma exclusão física de lançamento.
+- /o/:orgId/orcamento → annual_budget_plans e annual_budget_items.
+
+Regra de implantação: antes de habilitar as rotas em produção, Lovable deve aplicar o schema e as RPCs, regenerar os tipos do banco se o projeto usar tipos gerados, executar build/typecheck/testes e corrigir quaisquer incompatibilidades. Não editar manualmente drizzle/ nem migrations gerenciadas pelo Lovable.
