@@ -41,7 +41,12 @@ function Relatorios() {
           <option value="">Todos os centros de custo</option>{ccs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </div>
-      <div className="report-heading mb-4 hidden text-center print:block"><h1 className="text-lg font-bold">{org?.name}</h1><p className="text-sm">Relatórios contábeis · {fmtDate(from)} a {fmtDate(to)}</p></div>
+      <div className="report-heading mb-4 hidden text-center print:block">
+        <h1 className="text-lg font-bold">{org?.legal_name || org?.name}</h1>
+        {org?.cnpj && <p className="text-xs">CNPJ: {org.cnpj}</p>}
+        <p className="text-xs">{[org?.address_street,org?.address_number,org?.address_complement,org?.address_district,org?.address_city,org?.address_state,org?.address_postal_code].filter(Boolean).join(", ")}</p>
+        <p className="text-sm">Relatórios contábeis · {fmtDate(from)} a {fmtDate(to)}</p>
+      </div>
       <Tabs defaultValue="dre">
         <TabsList className="no-print flex-wrap"><TabsTrigger value="dre">{isChurch ? "Demonstração do Superávit" : "DRE"}</TabsTrigger><TabsTrigger value="bal">Balancete</TabsTrigger><TabsTrigger value="bp">Balanço Patrimonial</TabsTrigger><TabsTrigger value="raz">Razonetes</TabsTrigger></TabsList>
         <TabsContent value="dre" className="mt-4"><DRE accounts={accounts} lines={lines} from={from} to={to} church={isChurch} /></TabsContent>
@@ -49,7 +54,10 @@ function Relatorios() {
         <TabsContent value="bp" className="mt-4"><BalanceSheet accounts={accounts} lines={lines} asOf={to} /></TabsContent>
         <TabsContent value="raz" className="mt-4"><Razonetes accounts={accounts} lines={lines} from={from} to={to} /></TabsContent>
       </Tabs>
-      <div className="mt-12 hidden grid-cols-2 gap-12 text-center text-sm print:grid"><div className="border-t pt-2">Presidente / Responsável legal</div><div className="border-t pt-2">Contador(a) · CRC</div></div>
+      <div className="mt-12 hidden grid-cols-2 gap-12 text-center text-sm print:grid">
+        <div className="pt-8"><div className="border-t pt-2">{org?.legal_representative_name || "Presidente / Responsável legal"}</div><div className="text-xs">Representante legal</div></div>
+        <div className="pt-8"><div className="border-t pt-2">{org?.accountant_name || "Contador(a) responsável"}</div><div className="text-xs">CRC: {org?.accountant_crc || "Não informado"}</div></div>
+      </div>
     </>
   );
 }
