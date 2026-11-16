@@ -46,7 +46,7 @@ function Igreja() {
     if (!rev || !cash) { toast.error("Configure as contas de receita e caixa no plano de contas"); return; }
     const amount = +f.amount;
     const member = churchMembers.find((m: any) => m.id === f.member_id);
-    const contributor = member?.full_name ?? f.contributor.trim() ?? "";
+    const contributor = member?.full_name || f.contributor.trim();
     const { error } = await supabase.rpc("create_contribution", {
       _org: orgId, _date: f.date, _kind: f.kind, _member_id: f.member_id || null,
       _contributor: contributor || null, _amount: amount, _congregation_id: f.congregation_id || null,
