@@ -1,9 +1,10 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
-import { BarChart3, BookOpen, BookOpenCheck, Church, LayoutDashboard, ListTree, Menu, Users, ArrowLeftRight, LogOut, Settings2, CalendarDays, ContactRound, Package, Landmark, Building2, LockKeyhole } from "lucide-react";
+import { BarChart3, BookOpen, Church, LayoutDashboard, ListTree, Menu, Users, ArrowLeftRight, LogOut, Settings2, CalendarDays, ContactRound, Package, Landmark, Building2, LockKeyhole } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrg } from "@/lib/org-data";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/_authenticated/o/$orgId")({ component: OrgLayout });
 
@@ -44,7 +45,7 @@ function SideContent({ orgId, onNav }: { orgId: string; onNav?: (() => void) | u
   return (
     <div className="flex h-full flex-col bg-sidebar p-4 text-sidebar-foreground">
       <div className="mb-7 flex items-center gap-3 px-2 pt-1">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"><BookOpenCheck className="h-5 w-5" /></span>
+        <BrandLogo compact className="h-11 w-11 shrink-0" />
         <div className="min-w-0"><div className="truncate text-sm font-bold tracking-tight text-sidebar-accent-foreground">Sapucaí Tropicalis</div><div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-sidebar-foreground/45">Gestão contábil</div></div>
       </div>
       <div className="mb-5 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3">
@@ -80,7 +81,7 @@ function OrgLayout() {
           <SheetTrigger className="rounded-lg p-2 transition hover:bg-muted" aria-label="Abrir menu"><Menu className="h-5 w-5" /></SheetTrigger>
           <SheetContent side="left" className="w-64 border-0 p-0"><SideContent orgId={orgId} onNav={() => setOpen(false)} /></SheetContent>
         </Sheet>
-        <div className="min-w-0"><div className="truncate text-sm font-semibold">{org?.name}</div><div className="text-[10px] text-muted-foreground">Sapucaí Tropicalis</div></div>
+        <div className="flex min-w-0 items-center gap-2"><BrandLogo compact className="h-8 w-8 shrink-0" /><div className="min-w-0"><div className="truncate text-sm font-semibold">{org?.name}</div><div className="text-[10px] text-muted-foreground">Sapucaí Tropicalis</div></div></div>
       </header>
       <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-7 sm:py-8 xl:px-9"><Outlet /></main>
     </div>
