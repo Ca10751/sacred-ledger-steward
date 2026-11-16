@@ -17,6 +17,7 @@ const blank = { registration_number: "", full_name: "", cpf: "", birth_date: "",
 function ChurchMembers() {
   const { orgId } = Route.useParams();
   const qc = useQueryClient();
+  const db = supabase as any;
   const { data: org } = useOrg(orgId);
   const { data: role } = useMyRole(orgId);
   const canWrite = role === "admin" || role === "contador";
@@ -27,7 +28,7 @@ function ChurchMembers() {
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["church-members", orgId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("church_members").select("*").eq("org_id", orgId).order("full_name");
+      const { data, error } = await db.from("church_members").select("*").eq("org_id", orgId).order("full_name");
       if (error) throw error; return (data ?? []) as Member[];
     },
   });
@@ -39,8 +40,8 @@ function ChurchMembers() {
     if (!form.full_name.trim()) return;
     const payload = { ...form, org_id: orgId, registration_number: form.registration_number || null, cpf: form.cpf || null, birth_date: form.birth_date || null, phone: form.phone || null, email: form.email || null, address: form.address || null, joined_at: form.joined_at || null, notes: form.notes || null };
     const result = editing
-      ? await supabase.from("church_members").update(payload).eq("id", editing).eq("org_id", orgId)
-      : await supabase.from("church_members").insert(payload);
+      ? await db.from("church_members").update(payload).eq("id", editing).eq("org_id", orgId)
+      : await db.from("church_members").insert(payload);
     if (result.error) { toast.error(result.error.message); return; }
     toast.success(editing ? "Cadastro atualizado" : "Membro cadastrado");
     setForm(blank); setEditing(null); qc.invalidateQueries({ queryKey: ["church-members", orgId] });
@@ -51,7 +52,7 @@ function ChurchMembers() {
   }
   async function deactivate(m: Member) {
     if (!confirm("Inativar este membro? O histórico de contribuições será preservado.")) return;
-    const { error } = await supabase.from("church_members").update({ status:"inativo" }).eq("id",m.id).eq("org_id",orgId);
+    const { error } = await db.from("church_members").update({ status:"inativo" }).eq("id",m.id).eq("org_id",orgId);
     if (error) toast.error(error.message); else { toast.success("Membro inativado"); qc.invalidateQueries({ queryKey:["church-members",orgId] }); }
   }
   return <>
@@ -81,7 +82,7 @@ function ChurchMembers() {
     <section className="member-cards hidden print:grid">
       {chosen.map(m=><div key={m.id} className="member-card-pair">
         <div className="member-card"><div className="text-[9px] font-bold uppercase tracking-widest">{org?.name ?? "Igreja"}</div><div className="mt-3 text-lg font-bold">{m.full_name}</div><div className="mt-2 text-xs">Matrícula: {m.registration_number ?? "—"}</div><div className="mt-1 text-[10px]">Membro desde: {m.joined_at ?? "—"}</div><div className="mt-3 text-[8px] uppercase">Carteirinha de identificação</div></div>
-        <div className="member-card"><div className="text-[9px] font-bold uppercase tracking-widest">Identificação institucional</div><div className="mt-3 text-xs">{org?.legal_name ?? org?.name}</div><div className="mt-1 text-[10px]">CNPJ: {org?.cnpj ?? "Não informado"}</div><div className="mt-1 text-[10px]">{[org?.address_street,org?.address_number,org?.address_city,org?.address_state].filter(Boolean).join(", ")}</div><div className="mt-4 text-[9px]">Apresente esta identificação quando solicitado.</div></div>
+        <div className="member-card"><div className="text-[9px] font-bold uppercase tracking-widest">Identificação institucional</div><div className="mt-3 text-xs">{(org as any)?.legal_name ?? org?.name}</div><div className="mt-1 text-[10px]">CNPJ: {(org as any)?.cnpj ?? "Não informado"}</div><div className="mt-1 text-[10px]">{[(org as any)?.address_street,(org as any)?.address_number,(org as any)?.address_city,(org as any)?.address_state].filter(Boolean).join(", ")}</div><div className="mt-4 text-[9px]">Apresente esta identificação quando solicitado.</div></div>
       </div>)}
     </section>
     <style>{`
