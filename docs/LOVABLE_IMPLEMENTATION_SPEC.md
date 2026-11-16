@@ -75,3 +75,39 @@ Criar tabela `fiscal_year_closings`:
 - Testes contábeis demonstram partidas dobradas, estorno inverso exato e fechamento com resultado correto.
 - Carteirinhas medem 85,6 × 54 mm na impressão física.
 - Relatórios mantêm valores e filtros atuais e exibem dados oficiais apenas quando cadastrados.
+
+
+## 8. Planejamento anual de gastos (orçamento)
+Criar módulo próprio "Planejamento anual" para empresas e igrejas, isolado por organização:
+- Tabela `annual_budget_plans`: id, org_id, fiscal_year, status (draft/approved/closed), notes, created_by, approved_by, approved_at, created_at, updated_at; unicidade org_id + fiscal_year.
+- Tabela `annual_budget_items`: id, org_id, budget_id, account_id (conta analítica de despesa), cost_center_id opcional, congregation_id opcional, description opcional, monthly_values JSONB com 12 valores numéricos não negativos, created_at, updated_at.
+- Chaves estrangeiras compostas/validação garantem que plano, conta, centro de custo e congregação pertençam à mesma organização. RLS em todas as tabelas com is_member/can_write/is_org_admin.
+- Permitir criar planejamento por exercício, incluir diversas contas/categorias, centro de custo e congregação, preencher orçamento mês a mês, editar enquanto rascunho e aprovar com confirmação.
+- Exibir orçamento anual e mensal, realizado calculado a partir de journal_lines + journal_entries por conta/categoria e período, saldo disponível e variação (realizado menos previsto). Não gravar "realizado" manualmente: o realizado vem do razão contábil para evitar divergência.
+- Exibir comparação previsto x realizado por mês e por categoria; destacar estouro orçamentário; permitir exportar CSV e imprimir.
+- Planejamento não cria lançamento contábil. A aprovação congela a estrutura; alterações posteriores exigem reabertura autorizada com auditoria. Não permitir exclusão de orçamento aprovado com execução vinculada.
+
+## 9. Patrimônio permanente, materiais e almoxarifado
+Criar módulos e tabelas organizacionais:
+- `fixed_assets`: org_id, asset_code, description, category, acquisition_date, acquisition_value, useful_life_months opcional, residual_value, location, congregation_id, responsible_member_id opcional, serial_number, condition, status, notes.
+- `inventory_items`: org_id, sku, description, category, unit, min_quantity, active.
+- `inventory_movements`: org_id, item_id, movement_type (entrada/saida/transferencia/ajuste), quantity positiva, unit_cost opcional, movement_date, from_congregation_id, to_congregation_id, responsible, document, notes, created_by. Movimentações imutáveis; correção por movimento compensatório.
+- `physical_inventory_sessions` e `physical_inventory_counts` para contagem, divergência e aprovação de ajustes.
+- RLS e validações de pertencimento à organização em todas as referências. Transferência entre congregações registra saída e entrada vinculadas, sem alterar o total consolidado. Separar bem permanente do material de consumo; não contabilizar automaticamente sem regra de integração aprovada.
+
+## 10. Contas bancárias e conciliação
+Criar:
+- `bank_accounts`: org_id, account_id (conta contábil analítica do tipo ativo), bank_name, branch, account_number_masked, account_label, opening_balance, opening_date, active.
+- `bank_statements`: org_id, bank_account_id, statement_date, opening_balance, closing_balance, import_source, status.
+- `bank_statement_lines`: org_id, statement_id, transaction_date, description, document, amount, direction, external_id, matched_journal_line_id opcional, reconciliation_status, notes.
+- Importação CSV com mapeamento de colunas, prevenção de duplicidade por identificador/hash, conciliação manual e sugestão por data/valor/descrição; diferença entre saldo bancário e contábil sempre explícita.
+- Não criar lançamentos automaticamente durante importação. Ao confirmar uma correspondência ou gerar lançamento, usar RPC contábil existente e manter vínculo auditável.
+
+## 11. Dados institucionais, membros e carteirinhas — requisitos de implementação
+Além do esquema já descrito, separar cadastro de membros da tabela organization_members (que representa usuários do sistema). Não renomear nem reaproveitar a rota de usuários e permissões. Carteirinhas ID-1 devem usar impressão frente/verso em lote e respeitar privacidade de CPF.
+
+## 12. Critérios adicionais de aceite
+- Planejamento anual: valores mensais somam exatamente o total anual; realizado vem do razão; orçamento aprovado não pode ser alterado silenciosamente.
+- Estoque: saldo é soma de movimentos; transferências não alteram saldo consolidado; inventário registra diferenças e autorizações.
+- Bancos: importação idempotente; conciliação não altera lançamentos originais; diferença não conciliada permanece visível.
+- Toda operação sensível registra usuário, data, organização e motivo quando aplicável.
