@@ -176,3 +176,36 @@ As rotas adicionadas nesta branch dependem das tabelas e contratos acima:
 - /o/:orgId/orcamento → annual_budget_plans e annual_budget_items.
 
 Regra de implantação: antes de habilitar as rotas em produção, Lovable deve aplicar o schema e as RPCs, regenerar os tipos do banco se o projeto usar tipos gerados, executar build/typecheck/testes e corrigir quaisquer incompatibilidades. Não editar manualmente drizzle/ nem migrations gerenciadas pelo Lovable.
+
+
+## 15. Controles transacionais adicionais — orçamento, estoque e conciliação
+
+### 15.1 Aprovação de orçamento anual
+Criar RPC `approve_annual_budget(_org uuid, _budget_id uuid) RETURNS void`:
+- Exigir `is_org_admin(_org)`, bloquear a linha do orçamento com `FOR UPDATE` e aceitar apenas status `draft`.
+- Validar que todos os itens, contas analíticas, centros de custo e congregações pertencem à organização.
+- Validar exatamente 12 valores mensais numéricos, finitos e não negativos por item.
+- Registrar aprovador/data e mudar para `approved` atomicamente.
+- Impedir INSERT/UPDATE/DELETE de itens e alteração/exclusão do plano aprovado por policies e triggers; eventual reabertura deve ser fluxo administrativo separado, justificado e auditado.
+
+### 15.2 Movimentação e inventário de estoque
+Criar RPCs `record_inventory_movement(_org uuid, _item_id uuid, _movement_type text, _quantity numeric, _movement_date date, _from_congregation_id uuid, _to_congregation_id uuid, _unit_cost numeric, _responsible text, _document text, _notes text) RETURNS uuid` e `submit_physical_inventory(_org uuid, _session_id uuid) RETURNS void`:
+- Movimentos são append-only; proibir UPDATE/DELETE direto para usuários autenticados.
+- Bloquear item durante cálculo do saldo; rejeitar saída/transferência maior que o saldo disponível no almoxarifado/congregação de origem.
+- Transferência deve registrar débito/crédito de quantidade entre localizações na mesma transação e manter o saldo consolidado.
+- Rejeitar quantidade zero/negativa, unidade inválida, referências de outra organização e tipo de movimento incompatível com origem/destino.
+- Submissão deve validar que há exatamente uma contagem por item incluído no escopo, bloquear sessão/contagens e alterar status de draft para submitted atomicamente.
+- Após submitted, impedir alteração das contagens. Somente `approve_physical_inventory` pode aprovar e gerar ajustes; exigir justificativa e referência à sessão.
+
+### 15.3 Conciliação bancária
+Criar RPC `reconcile_bank_statement_line(_org uuid, _statement_line_id uuid, _journal_line_id uuid) RETURNS void`:
+- Validar `can_write(_org)`; bloquear linha do extrato e linha contábil com `FOR UPDATE`.
+- Validar que ambas pertencem à mesma organização, que a conta bancária e a linha contábil usam exatamente a conta contábil vinculada, que a data coincide e que valor/direção correspondem (crédito no extrato bancário corresponde a débito na conta de ativo; débito bancário corresponde a crédito).
+- Rejeitar linhas já conciliadas, linhas contábeis já vinculadas indevidamente, divergência superior a R$ 0,01 e referências de outra organização.
+- Gravar vínculo, usuário, data e estado conciliado em uma transação; preservar extrato e lançamento originais.
+- RLS deve impedir atualização direta do estado/vínculo sem a RPC.
+
+### 15.4 Segurança multi-tenant e imutabilidade
+- Adotar FKs compostas ou validação equivalente que impeça cruzamento de org_id entre todas as tabelas novas e existentes relacionadas.
+- Testar operações simultâneas para orçamento, aprovação de inventário, movimentações e conciliação.
+- Toda função SECURITY DEFINER deve fixar search_path, validar auth.uid(), minimizar privilégios e não confiar em org_id recebido sem verificar associação.
