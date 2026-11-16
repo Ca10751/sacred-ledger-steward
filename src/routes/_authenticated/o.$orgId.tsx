@@ -45,7 +45,7 @@ function SideContent({ orgId, onNav }: { orgId: string; onNav?: (() => void) | u
     <div className="flex h-full flex-col bg-sidebar p-4 text-sidebar-foreground">
       <div className="mb-7 flex items-center gap-3 px-2 pt-1">
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"><BookOpenCheck className="h-5 w-5" /></span>
-        <div className="min-w-0"><div className="truncate text-sm font-bold tracking-tight text-sidebar-accent-foreground">Sacred Ledger</div><div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-sidebar-foreground/45">Gestão contábil</div></div>
+        <div className="min-w-0"><div className="truncate text-sm font-bold tracking-tight text-sidebar-accent-foreground">Sapucaí Tropicalis</div><div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-sidebar-foreground/45">Gestão contábil</div></div>
       </div>
       <div className="mb-5 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3">
         <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-sidebar-foreground/50"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Organização ativa</div>
@@ -62,7 +62,7 @@ function SideContent({ orgId, onNav }: { orgId: string; onNav?: (() => void) | u
           <p className="mt-1 text-[11px] leading-relaxed text-sidebar-foreground/50">Dados separados por organização e controle de permissões.</p>
         </div>
         <button onClick={() => supabase.auth.signOut()} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/65 transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><LogOut className="h-4 w-4" />Sair da conta</button>
-        <div className="px-3 pt-3 text-[10px] text-sidebar-foreground/35">Sacred Ledger · versão em desenvolvimento</div>
+        <div className="px-3 pt-3 text-[10px] text-sidebar-foreground/35">Sapucaí Tropicalis · gestão contábil</div>
       </div>
     </div>
   );
@@ -80,7 +80,7 @@ function OrgLayout() {
           <SheetTrigger className="rounded-lg p-2 transition hover:bg-muted" aria-label="Abrir menu"><Menu className="h-5 w-5" /></SheetTrigger>
           <SheetContent side="left" className="w-64 border-0 p-0"><SideContent orgId={orgId} onNav={() => setOpen(false)} /></SheetContent>
         </Sheet>
-        <div className="min-w-0"><div className="truncate text-sm font-semibold">{org?.name}</div><div className="text-[10px] text-muted-foreground">Sacred Ledger</div></div>
+        <div className="min-w-0"><div className="truncate text-sm font-semibold">{org?.name}</div><div className="text-[10px] text-muted-foreground">Sapucaí Tropicalis</div></div>
       </header>
       <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-7 sm:py-8 xl:px-9"><Outlet /></main>
     </div>
