@@ -44,7 +44,7 @@ function Relatorios() {
       </div>
       <div className="report-heading mb-4 hidden text-center print:block">
         <h1 className="text-lg font-bold">{institution?.legal_name || org?.name}</h1>
-        {institution?.cnpj && <p className="text-xs">CNPJ: {org.cnpj}</p>}
+        {institution?.cnpj && <p className="text-xs">CNPJ: {institution.cnpj}</p>}
         <p className="text-xs">{[institution?.address_street,institution?.address_number,institution?.address_complement,institution?.address_district,institution?.address_city,institution?.address_state,institution?.address_postal_code].filter(Boolean).join(", ")}</p>
         <p className="text-sm">Relatórios contábeis · {fmtDate(from)} a {fmtDate(to)}</p>
       </div>
