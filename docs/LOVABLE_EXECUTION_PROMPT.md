@@ -34,7 +34,7 @@ Implemente integralmente os schemas e contratos descritos nas seções 1 a 14 de
 - fixed_assets, inventory_items, inventory_movements, physical_inventory_sessions e physical_inventory_counts;
 - bank_accounts, bank_statements e bank_statement_lines;
 - journal_entry_reversals e fiscal_year_closings;
-- RPCs create_contribution, reverse_journal_entry, close_fiscal_year e import_bank_statement;
+- RPCs create_contribution, reverse_journal_entry, close_fiscal_year, import_bank_statement e approve_physical_inventory;
 - políticas RLS, constraints, índices, validações de referências cruzadas e auditoria.
 
 Para tabelas existentes, adicione colunas de forma compatível e nullable quando necessário. Backfill apenas quando o valor puder ser determinado com segurança. Não invente CNPJ, endereço, nome de membro, saldos ou dados históricos.
