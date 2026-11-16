@@ -21,6 +21,7 @@ const emptyMonths = () => Array.from({ length: 12 }, () => "");
 function AnnualBudget() {
   const { orgId } = Route.useParams();
   const qc = useQueryClient();
+  const db = supabase as any;
   const [year, setYear] = useState(yearNow);
   const [selectedAccount, setSelectedAccount] = useState("");
   const [selectedCostCenter, setSelectedCostCenter] = useState("");
@@ -40,7 +41,7 @@ function AnnualBudget() {
   const { data: plan, isLoading: planLoading } = useQuery({
     queryKey: ["annual-budget-plan", orgId, year],
     queryFn: async () => {
-      const { data, error } = await supabase.from("annual_budget_plans").select("*").eq("org_id", orgId).eq("fiscal_year", year).maybeSingle();
+      const { data, error } = await db.from("annual_budget_plans").select("*").eq("org_id", orgId).eq("fiscal_year", year).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -49,7 +50,7 @@ function AnnualBudget() {
     queryKey: ["annual-budget-items", orgId, plan?.id],
     enabled: !!plan?.id,
     queryFn: async () => {
-      const { data, error } = await supabase.from("annual_budget_items").select("*, accounts(code,name), cost_centers(name), congregations(name)").eq("org_id", orgId).eq("budget_id", plan!.id).order("created_at");
+      const { data, error } = await db.from("annual_budget_items").select("*, accounts(code,name), cost_centers(name), congregations(name)").eq("org_id", orgId).eq("budget_id", plan!.id).order("created_at");
       if (error) throw error;
       return data ?? [];
     },
@@ -80,7 +81,7 @@ function AnnualBudget() {
   const approved = plan?.status === "approved" || plan?.status === "closed";
 
   async function createPlan() {
-    const { error } = await supabase.from("annual_budget_plans").insert({ org_id: orgId, fiscal_year: year, status: "draft" });
+    const { error } = await db.from("annual_budget_plans").insert({ org_id: orgId, fiscal_year: year, status: "draft" });
     if (error) { toast.error(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["annual-budget-plan", orgId, year] });
     toast.success("Planejamento anual criado");
@@ -91,7 +92,7 @@ function AnnualBudget() {
     if (!plan?.id || !selectedAccount) return;
     const values = monthly.map((v) => Math.max(0, Number(v) || 0));
     if (values.every((v) => v === 0)) { toast.error("Informe o orçamento de pelo menos um mês"); return; }
-    const { error } = await supabase.from("annual_budget_items").insert({
+    const { error } = await db.from("annual_budget_items").insert({
       org_id: orgId, budget_id: plan.id, account_id: selectedAccount,
       cost_center_id: selectedCostCenter || null, congregation_id: selectedCongregation || null,
       description: description.trim() || null, monthly_values: values,
@@ -104,7 +105,7 @@ function AnnualBudget() {
 
   async function removeItem(id: string) {
     if (!plan?.id || approved || !confirm("Remover esta categoria do planejamento?")) return;
-    const { error } = await supabase.from("annual_budget_items").delete().eq("id", id).eq("org_id", orgId);
+    const { error } = await db.from("annual_budget_items").delete().eq("id", id).eq("org_id", orgId);
     if (error) { toast.error(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["annual-budget-items", orgId, plan.id] });
   }
@@ -112,7 +113,7 @@ function AnnualBudget() {
   async function approvePlan() {
     if (!plan?.id || !isAdmin) return;
     if (!confirm("Aprovar o orçamento anual? A aprovação bloqueará a edição dos valores planejados.")) return;
-    const { error } = await supabase.from("annual_budget_plans").update({ status: "approved", approved_by: (await supabase.auth.getUser()).data.user?.id, approved_at: new Date().toISOString() }).eq("id", plan.id).eq("org_id", orgId).eq("status", "draft");
+    const { error } = await db.from("annual_budget_plans").update({ status: "approved", approved_by: (await supabase.auth.getUser()).data.user?.id, approved_at: new Date().toISOString() }).eq("id", plan.id).eq("org_id", orgId).eq("status", "draft");
     if (error) { toast.error(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["annual-budget-plan", orgId, year] });
     toast.success("Planejamento aprovado");
