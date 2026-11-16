@@ -83,14 +83,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Escritura — Contabilidade multi-empresa" },
-      { name: "description", content: "Escrituração contábil para empresas e igrejas" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Escritura — Contabilidade multi-empresa" },
-      { property: "og:description", content: "Escrituração contábil para empresas e igrejas" },
+      { title: "Sapucaí Tropicalis — Gestão contábil" },
+      { name: "description", content: "Gestão contábil e administrativa para empresas e igrejas" },
+      { name: "author", content: "Sapucaí Tropicalis" },
+      { property: "og:title", content: "Sapucaí Tropicalis — Gestão contábil" },
+      { property: "og:description", content: "Gestão contábil e administrativa para empresas e igrejas" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      
     ],
     links: [
       {
