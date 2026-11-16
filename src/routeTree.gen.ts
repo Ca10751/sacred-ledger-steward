@@ -15,7 +15,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
 import { Route as AuthenticatedOOrgIdRouteImport } from './routes/_authenticated/o.$orgId'
 import { Route as AuthenticatedOOrgIdIndexRouteImport } from './routes/_authenticated/o.$orgId.index'
+import { Route as AuthenticatedOOrgIdContasRouteImport } from './routes/_authenticated/o.$orgId.contas'
 import { Route as AuthenticatedOOrgIdLancamentosRouteImport } from './routes/_authenticated/o.$orgId.lancamentos'
+import { Route as AuthenticatedOOrgIdRelatoriosRouteImport } from './routes/_authenticated/o.$orgId.relatorios'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,10 +49,22 @@ const AuthenticatedOOrgIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedOOrgIdRoute,
   } as any)
+const AuthenticatedOOrgIdContasRoute =
+  AuthenticatedOOrgIdContasRouteImport.update({
+    id: '/contas',
+    path: '/contas',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
 const AuthenticatedOOrgIdLancamentosRoute =
   AuthenticatedOOrgIdLancamentosRouteImport.update({
     id: '/lancamentos',
     path: '/lancamentos',
+    getParentRoute: () => AuthenticatedOOrgIdRoute,
+  } as any)
+const AuthenticatedOOrgIdRelatoriosRoute =
+  AuthenticatedOOrgIdRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
     getParentRoute: () => AuthenticatedOOrgIdRoute,
   } as any)
 
@@ -59,14 +73,18 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/o/$orgId': typeof AuthenticatedOOrgIdRouteWithChildren
+  '/o/$orgId/contas': typeof AuthenticatedOOrgIdContasRoute
   '/o/$orgId/lancamentos': typeof AuthenticatedOOrgIdLancamentosRoute
+  '/o/$orgId/relatorios': typeof AuthenticatedOOrgIdRelatoriosRoute
   '/o/$orgId/': typeof AuthenticatedOOrgIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
+  '/o/$orgId/contas': typeof AuthenticatedOOrgIdContasRoute
   '/o/$orgId/lancamentos': typeof AuthenticatedOOrgIdLancamentosRoute
+  '/o/$orgId/relatorios': typeof AuthenticatedOOrgIdRelatoriosRoute
   '/o/$orgId': typeof AuthenticatedOOrgIdIndexRoute
 }
 export interface FileRoutesById {
@@ -76,7 +94,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/empresas': typeof AuthenticatedEmpresasRoute
   '/_authenticated/o/$orgId': typeof AuthenticatedOOrgIdRouteWithChildren
+  '/_authenticated/o/$orgId/contas': typeof AuthenticatedOOrgIdContasRoute
   '/_authenticated/o/$orgId/lancamentos': typeof AuthenticatedOOrgIdLancamentosRoute
+  '/_authenticated/o/$orgId/relatorios': typeof AuthenticatedOOrgIdRelatoriosRoute
   '/_authenticated/o/$orgId/': typeof AuthenticatedOOrgIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -86,10 +106,19 @@ export interface FileRouteTypes {
     | '/auth'
     | '/empresas'
     | '/o/$orgId'
+    | '/o/$orgId/contas'
     | '/o/$orgId/lancamentos'
+    | '/o/$orgId/relatorios'
     | '/o/$orgId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/empresas' | '/o/$orgId/lancamentos' | '/o/$orgId'
+  to:
+    | '/'
+    | '/auth'
+    | '/empresas'
+    | '/o/$orgId/contas'
+    | '/o/$orgId/lancamentos'
+    | '/o/$orgId/relatorios'
+    | '/o/$orgId'
   id:
     | '__root__'
     | '/'
@@ -97,7 +126,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/empresas'
     | '/_authenticated/o/$orgId'
+    | '/_authenticated/o/$orgId/contas'
     | '/_authenticated/o/$orgId/lancamentos'
+    | '/_authenticated/o/$orgId/relatorios'
     | '/_authenticated/o/$orgId/'
   fileRoutesById: FileRoutesById
 }
@@ -151,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOOrgIdIndexRouteImport
       parentRoute: typeof AuthenticatedOOrgIdRoute
     }
+    '/_authenticated/o/$orgId/contas': {
+      id: '/_authenticated/o/$orgId/contas'
+      path: '/contas'
+      fullPath: '/o/$orgId/contas'
+      preLoaderRoute: typeof AuthenticatedOOrgIdContasRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
     '/_authenticated/o/$orgId/lancamentos': {
       id: '/_authenticated/o/$orgId/lancamentos'
       path: '/lancamentos'
@@ -158,16 +196,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOOrgIdLancamentosRouteImport
       parentRoute: typeof AuthenticatedOOrgIdRoute
     }
+    '/_authenticated/o/$orgId/relatorios': {
+      id: '/_authenticated/o/$orgId/relatorios'
+      path: '/relatorios'
+      fullPath: '/o/$orgId/relatorios'
+      preLoaderRoute: typeof AuthenticatedOOrgIdRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedOOrgIdRoute
+    }
   }
 }
 
 interface AuthenticatedOOrgIdRouteChildren {
+  AuthenticatedOOrgIdContasRoute: typeof AuthenticatedOOrgIdContasRoute
   AuthenticatedOOrgIdLancamentosRoute: typeof AuthenticatedOOrgIdLancamentosRoute
+  AuthenticatedOOrgIdRelatoriosRoute: typeof AuthenticatedOOrgIdRelatoriosRoute
   AuthenticatedOOrgIdIndexRoute: typeof AuthenticatedOOrgIdIndexRoute
 }
 
 const AuthenticatedOOrgIdRouteChildren: AuthenticatedOOrgIdRouteChildren = {
+  AuthenticatedOOrgIdContasRoute: AuthenticatedOOrgIdContasRoute,
   AuthenticatedOOrgIdLancamentosRoute: AuthenticatedOOrgIdLancamentosRoute,
+  AuthenticatedOOrgIdRelatoriosRoute: AuthenticatedOOrgIdRelatoriosRoute,
   AuthenticatedOOrgIdIndexRoute: AuthenticatedOOrgIdIndexRoute,
 }
 

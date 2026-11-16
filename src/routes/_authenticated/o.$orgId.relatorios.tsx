@@ -45,7 +45,7 @@ const Row = ({ label, value, strong, code }: { label: string; value: number; str
   </div>
 );
 
-export function DRE({ accounts, lines, from, to, church }: P & { church?: boolean }) {
+function DRE({ accounts, lines, from, to, church }: P & { church?: boolean }) {
   const r = income(accounts, lines, from, to);
   return (
     <div className="divide-y rounded-lg border bg-card">
