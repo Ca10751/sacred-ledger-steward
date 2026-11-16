@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { BookOpen, BookOpenCheck, Building2, Church, Scale } from "lucide-react";
+import { BookOpen, Building2, Church, Scale } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,7 +29,7 @@ function Index() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-2 font-semibold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground"><BookOpenCheck className="h-5 w-5" /></span>Sapucaí Tropicalis</div>
+        <BrandLogo className="h-14 w-auto max-w-[260px]" />
         <Button asChild variant="outline"><Link to="/auth">Entrar</Link></Button>
       </header>
       <main className="mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-20">
