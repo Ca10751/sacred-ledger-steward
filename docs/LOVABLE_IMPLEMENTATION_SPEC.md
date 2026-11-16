@@ -154,6 +154,16 @@ Criar RPC import_bank_statement(_org uuid, _bank_account_id uuid, _statement_dat
 - Somente aprovação autorizada pode gerar movimentos ajuste; nunca editar/apagar movimentos anteriores.
 - Validar referências de sessão, item e congregação dentro da mesma organização.
 
+
+- Criar RPC approve_physical_inventory(_org uuid, _session_id uuid) RETURNS void:
+  - exigir is_org_admin(_org), sessão da mesma organização e status submitted;
+  - bloquear sessão e contagens para evitar aprovação concorrente;
+  - validar expected_quantity/count e divergência;
+  - gerar movimentos compensatórios de ajuste para cada item divergente, com data de referência, usuário aprovador e referência à sessão no documento/notes;
+  - marcar sessão approved, approved_by e approved_at na mesma transação;
+  - rejeitar segunda aprovação, sessão de outra organização e sessão ainda em draft.
+- physical_inventory_counts deve ter unicidade (session_id, item_id), e edição somente enquanto sessão estiver draft.
+
 ## 14. Contrato de integração das telas adicionadas
 As rotas adicionadas nesta branch dependem das tabelas e contratos acima:
 - /o/:orgId/cadastro-membros → church_members, leitura e CRUD com inativação (sem exclusão física).
