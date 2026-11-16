@@ -14,7 +14,7 @@ import { brl, fmtDate } from "@/lib/reports";
 export const Route = createFileRoute("/_authenticated/o/$orgId/bancos")({ component: Bancos });
 function parseCsv(text:string){const first=text.split(/\r?\n/).find(x=>x.trim())??"";const delimiter=(first.match(/;/g)?.length??0)>(first.match(/,/g)?.length??0)?";":",";return text.split(/\r?\n/).filter(x=>x.trim()).map(line=>{const out:string[]=[];let cur="",quoted=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++;}else quoted=!quoted;}else if(ch===delimiter&&!quoted){out.push(cur.trim());cur="";}else cur+=ch;}out.push(cur.trim());return out;});}
 function money(v:string){const n=Number(v.replace(/\./g,"").replace(",", "."));return Number.isFinite(n)?n:0;}
-function isoDate(v:string){if(/^\\d{4}-\\d{2}-\\d{2}$/.test(v))return v;const m=v.match(/^(\\d{2})[\\/.-](\\d{2})[\\/.-](\\d{4})$/);return m?`${m[3]}-${m[2]}-${m[1]}`:v;}
+function isoDate(v:string){if(v.length===10&&v[4]==="-"&&v[7]==="-")return v;const separator=v.includes("/")?"/":v.includes(".")?".":"-";const parts=v.split(separator);if(parts.length!==3)return v;const [day,month,year]=parts;if(year.length!==4)return v;return `${year}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;}
 
 function Bancos(){
  const {orgId}=Route.useParams();const qc=useQueryClient();const {data:role}=useMyRole(orgId);const canWrite=role==="admin"||role==="contador";const {data:accounts=[]}=useAccounts(orgId);
