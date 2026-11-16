@@ -11,7 +11,7 @@ Construa um sistema web de gestão e escrituração contábil multi-empresa com 
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Aplicação**: Sapucaí Tropicalis (projeto Lovable atual)
+**Aplicação (URL técnica atual)**: https://sacred-ledger-steward.lovable.app
 
 ## Desenvolvimento com Lovable
 
