@@ -53,3 +53,37 @@ export function monthRange(ref = new Date()) {
   const last = new Date(y, m + 1, 0).getDate();
   return { from: `${y}-${pad(m + 1)}-01`, to: `${y}-${pad(m + 1)}-${pad(last)}` };
 }
+
+export interface BalanceSheetRow { account: Acc; balance: number }
+export function balanceSheet(accounts: Acc[], lines: Line[], asOf: string) {
+  const rows: BalanceSheetRow[] = accounts.filter((a) => a.analytic && (a.type === "ativo" || a.type === "passivo" || a.type === "patrimonio"))
+    .map((account) => {
+      const related = lines.filter((l) => l.account_id === account.id && l.date <= asOf);
+      const debit = related.reduce((s, l) => s + +l.debit, 0);
+      const credit = related.reduce((s, l) => s + +l.credit, 0);
+      return { account, balance: r2(signedBalance(account.type, debit, credit)) };
+    })
+    .filter((x) => x.balance !== 0)
+    .sort((a, b) => a.account.code.localeCompare(b.account.code, undefined, { numeric: true }));
+  const total = (type: AccountType) => r2(rows.filter((x) => x.account.type === type).reduce((s, x) => s + x.balance, 0));
+  const resultFrom = `${asOf.slice(0, 4)}-01-01`;
+  const result = income(accounts, lines, resultFrom, asOf).resultado;
+  return {
+    rows,
+    assets: total("ativo"),
+    liabilities: total("passivo"),
+    equity: total("patrimonio"),
+    currentResult: result,
+    liabilitiesAndEquity: r2(total("passivo") + total("patrimonio") + result),
+  };
+}
+
+export function downloadCsv(filename: string, headers: string[], rows: (string | number)[][]) {
+  const quote = (value: string | number) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const csv = [headers, ...rows].map((row) => row.map(quote).join(";")).join("\r\n");
+  const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url; link.download = filename; link.click();
+  URL.revokeObjectURL(url);
+}
