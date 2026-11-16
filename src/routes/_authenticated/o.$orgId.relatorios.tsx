@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/o/$orgId/relatorios")({ co
 function Relatorios() {
   const { orgId } = Route.useParams();
   const { data: org } = useOrg(orgId);
+  const institution = org as any;
   const { data: accounts = [] } = useAccounts(orgId);
   const { data: ccs = [] } = useCostCenters(orgId);
   const [{ from, to }, setP] = useState(monthRange());
@@ -42,9 +43,9 @@ function Relatorios() {
         </select>
       </div>
       <div className="report-heading mb-4 hidden text-center print:block">
-        <h1 className="text-lg font-bold">{org?.legal_name || org?.name}</h1>
-        {org?.cnpj && <p className="text-xs">CNPJ: {org.cnpj}</p>}
-        <p className="text-xs">{[org?.address_street,org?.address_number,org?.address_complement,org?.address_district,org?.address_city,org?.address_state,org?.address_postal_code].filter(Boolean).join(", ")}</p>
+        <h1 className="text-lg font-bold">{institution?.legal_name || org?.name}</h1>
+        {institution?.cnpj && <p className="text-xs">CNPJ: {org.cnpj}</p>}
+        <p className="text-xs">{[institution?.address_street,institution?.address_number,institution?.address_complement,institution?.address_district,institution?.address_city,institution?.address_state,institution?.address_postal_code].filter(Boolean).join(", ")}</p>
         <p className="text-sm">Relatórios contábeis · {fmtDate(from)} a {fmtDate(to)}</p>
       </div>
       <Tabs defaultValue="dre">
@@ -55,8 +56,8 @@ function Relatorios() {
         <TabsContent value="raz" className="mt-4"><Razonetes accounts={accounts} lines={lines} from={from} to={to} /></TabsContent>
       </Tabs>
       <div className="mt-12 hidden grid-cols-2 gap-12 text-center text-sm print:grid">
-        <div className="pt-8"><div className="border-t pt-2">{org?.legal_representative_name || "Presidente / Responsável legal"}</div><div className="text-xs">Representante legal</div></div>
-        <div className="pt-8"><div className="border-t pt-2">{org?.accountant_name || "Contador(a) responsável"}</div><div className="text-xs">CRC: {org?.accountant_crc || "Não informado"}</div></div>
+        <div className="pt-8"><div className="border-t pt-2">{institution?.legal_representative_name || "Presidente / Responsável legal"}</div><div className="text-xs">Representante legal</div></div>
+        <div className="pt-8"><div className="border-t pt-2">{institution?.accountant_name || "Contador(a) responsável"}</div><div className="text-xs">CRC: {institution?.accountant_crc || "Não informado"}</div></div>
       </div>
     </>
   );
