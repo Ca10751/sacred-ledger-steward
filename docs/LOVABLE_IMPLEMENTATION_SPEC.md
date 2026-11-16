@@ -59,7 +59,7 @@ Criar tabela `journal_entry_reversals`:
 Criar tabela `fiscal_year_closings`:
 - `id`, `org_id`, `fiscal_year`, `closing_entry_id`, `profit_loss_account_id`, `closed_by`, `closed_at`, `notes`.
 - Unicidade por `org_id + fiscal_year`.
-- Criar RPC transacional `close_fiscal_year(_org, _year, _profit_loss_account_id)`:
+- Criar RPC transacional `close_fiscal_year(_org, _year, _profit_loss_account_id, _notes)`:
   1. validar permissão, período e conta de destinação do patrimônio líquido;
   2. apurar saldos das contas de receita e despesa no exercício;
   3. gerar partidas de encerramento que zerem as contas de resultado;
