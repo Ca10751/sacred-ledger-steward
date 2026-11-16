@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/o/$orgId/lancamentos")({ c
 function Lancamentos() {
   const { orgId } = Route.useParams();
   const qc = useQueryClient();
+  const db = supabase as any;
   const { data: role } = useMyRole(orgId);
   const canWrite = role === "admin" || role === "contador";
   const [{ from, to }, setP] = useState(monthRange());
@@ -36,7 +37,7 @@ function Lancamentos() {
       toast.error("Informe uma justificativa com pelo menos 8 caracteres.");
       return;
     }
-    const { data, error } = await supabase.rpc("reverse_journal_entry", {
+    const { data, error } = await db.rpc("reverse_journal_entry", {
       _org: orgId, _entry_id: reversalTarget.id, _reason: reversalReason.trim(),
     });
     if (error) { toast.error(error.message); return; }
