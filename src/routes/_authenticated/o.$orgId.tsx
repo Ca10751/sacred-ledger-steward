@@ -26,15 +26,21 @@ function Nav({ orgId, isChurch, onNav }: { orgId: string; isChurch: boolean; onN
     { to: "/o/$orgId/membros", label: "Usuários e acessos", icon: Users },
   ] as const;
   return (
-    <nav className="flex flex-col gap-1">
+    <nav
+      aria-label="Navegação da organização"
+      className="workspace-nav-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain pr-1"
+      style={{ scrollbarWidth: "thin", scrollbarColor: "oklch(0.55 0.03 258 / 0.75) transparent" }}
+    >
       <div className="mb-2 px-3 pt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/40">Workspace</div>
-      {items.map((i) => (
-        <Link key={i.to} to={i.to} params={{ orgId }} onClick={onNav} activeOptions={{ exact: "exact" in i }}
-          className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground/70 transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          activeProps={{ className: "bg-sidebar-accent !text-sidebar-accent-foreground font-semibold shadow-sm" }}>
-          <i.icon className="h-[17px] w-[17px] opacity-80 group-hover:opacity-100" />{i.label}
-        </Link>
-      ))}
+      <div className="flex flex-col gap-1 pb-2">
+        {items.map((i) => (
+          <Link key={i.to} to={i.to} params={{ orgId }} onClick={onNav} activeOptions={{ exact: "exact" in i }}
+            className="group flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-sidebar-foreground/70 transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            activeProps={{ className: "bg-sidebar-accent !text-sidebar-accent-foreground font-semibold shadow-sm" }}>
+            <i.icon className="h-[17px] w-[17px] shrink-0 opacity-80 group-hover:opacity-100" />{i.label}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }
@@ -43,12 +49,12 @@ function SideContent({ orgId, onNav }: { orgId: string; onNav?: (() => void) | u
   const { data: org } = useOrg(orgId);
   const isChurch = org?.type === "igreja";
   return (
-    <div className="flex h-full flex-col bg-sidebar p-4 text-sidebar-foreground">
-      <div className="mb-7 flex items-center gap-3 px-2 pt-1">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-sidebar p-4 text-sidebar-foreground">
+      <div className="mb-7 flex shrink-0 items-center gap-3 px-2 pt-1">
         <BrandLogo compact className="h-11 w-11 shrink-0" />
         <div className="min-w-0"><div className="truncate text-sm font-bold tracking-tight text-sidebar-accent-foreground">Sapucaí Tropicalis</div><div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-sidebar-foreground/45">Gestão contábil</div></div>
       </div>
-      <div className="mb-5 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3">
+      <div className="mb-5 shrink-0 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3">
         <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-sidebar-foreground/50"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Organização ativa</div>
         <div className="flex items-center gap-2.5">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sidebar-primary/80 text-sidebar-primary-foreground">{isChurch ? <Church className="h-4 w-4" /> : <span className="text-xs font-bold">PJ</span>}</span>
@@ -57,7 +63,7 @@ function SideContent({ orgId, onNav }: { orgId: string; onNav?: (() => void) | u
         <Link to="/empresas" onClick={onNav} className="mt-3 flex items-center gap-1.5 border-t border-sidebar-border pt-3 text-xs text-sidebar-foreground/65 transition hover:text-sidebar-accent-foreground"><ArrowLeftRight className="h-3.5 w-3.5" />Trocar organização</Link>
       </div>
       <Nav orgId={orgId} isChurch={isChurch} onNav={onNav} />
-      <div className="mt-auto">
+      <div className="mt-3 shrink-0">
         <div className="mb-3 rounded-lg border border-sidebar-border/70 p-3">
           <div className="flex items-center gap-2 text-xs font-medium text-sidebar-accent-foreground"><Settings2 className="h-3.5 w-3.5" />Ambiente seguro</div>
           <p className="mt-1 text-[11px] leading-relaxed text-sidebar-foreground/50">Dados separados por organização e controle de permissões.</p>
@@ -79,7 +85,7 @@ function OrgLayout() {
       <header className="no-print sticky top-0 z-30 flex items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger className="rounded-lg p-2 transition hover:bg-muted" aria-label="Abrir menu"><Menu className="h-5 w-5" /></SheetTrigger>
-          <SheetContent side="left" className="w-64 border-0 p-0"><SideContent orgId={orgId} onNav={() => setOpen(false)} /></SheetContent>
+          <SheetContent side="left" className="h-dvh w-64 border-0 p-0"><SideContent orgId={orgId} onNav={() => setOpen(false)} /></SheetContent>
         </Sheet>
         <div className="flex min-w-0 items-center gap-2"><BrandLogo compact className="h-8 w-8 shrink-0" /><div className="min-w-0"><div className="truncate text-sm font-semibold">{org?.name}</div><div className="text-[10px] text-muted-foreground">Sapucaí Tropicalis</div></div></div>
       </header>
