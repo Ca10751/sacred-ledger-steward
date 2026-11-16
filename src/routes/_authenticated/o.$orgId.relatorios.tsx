@@ -19,6 +19,17 @@ function Relatorios() {
   const { data: all = [] } = useLines(orgId, to);
   const lines = useMemo(() => (cc ? all.filter((l) => l.cost_center_id === cc) : all), [all, cc]);
   const isChurch = org?.type === "igreja";
+  const dre = income(accounts, lines, from, to);
+  const tb = trialBalance(accounts, lines, from, to);
+  const bp = balanceSheet(accounts, lines, to);
+  const exportCsv = () => {
+    downloadCsv(`dre-${from}-${to}.csv`, ["Tipo", "Código", "Conta", "Valor"], [
+      ...dre.receitas.map((x) => ["Receita", x.account.code, x.account.name, x.value]),
+      ...dre.despesas.map((x) => ["Despesa", x.account.code, x.account.name, x.value]),
+    ]);
+    downloadCsv(`balancete-${from}-${to}.csv`, ["Código", "Conta", "Saldo anterior", "Débitos", "Créditos", "Saldo atual"], tb.rows.map((x) => [x.account.code, x.account.name, x.opening, x.debit, x.credit, x.closing]));
+    downloadCsv(`balanco-${to}.csv`, ["Grupo", "Código", "Conta", "Saldo"], bp.rows.map((x) => [x.account.type, x.account.code, x.account.name, x.balance]));
+  };
   return (
     <>
       <PageHeader title="Relatórios" subtitle={`${org?.name ?? ""} · ${fmtDate(from)} a ${fmtDate(to)}`} actions={<div className="flex gap-2"><Button variant="outline" onClick={exportCsv}><Download className="mr-1.5 h-4 w-4" />Exportar CSV</Button><Button variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 h-4 w-4" />Imprimir</Button></div>} />
@@ -28,12 +39,15 @@ function Relatorios() {
           <option value="">Todos os centros de custo</option>{ccs.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </div>
+      <div className="report-heading mb-4 hidden text-center print:block"><h1 className="text-lg font-bold">{org?.name}</h1><p className="text-sm">Relatórios contábeis · {fmtDate(from)} a {fmtDate(to)}</p></div>
       <Tabs defaultValue="dre">
-        <TabsList className="no-print"><TabsTrigger value="dre">{isChurch ? "Demonstração do Superávit" : "DRE"}</TabsTrigger><TabsTrigger value="bal">Balancete</TabsTrigger><TabsTrigger value="raz">Razonetes</TabsTrigger></TabsList>
+        <TabsList className="no-print flex-wrap"><TabsTrigger value="dre">{isChurch ? "Demonstração do Superávit" : "DRE"}</TabsTrigger><TabsTrigger value="bal">Balancete</TabsTrigger><TabsTrigger value="bp">Balanço Patrimonial</TabsTrigger><TabsTrigger value="raz">Razonetes</TabsTrigger></TabsList>
         <TabsContent value="dre" className="mt-4"><DRE accounts={accounts} lines={lines} from={from} to={to} church={isChurch} /></TabsContent>
         <TabsContent value="bal" className="mt-4"><Balancete accounts={accounts} lines={lines} from={from} to={to} /></TabsContent>
+        <TabsContent value="bp" className="mt-4"><BalanceSheet accounts={accounts} lines={lines} asOf={to} /></TabsContent>
         <TabsContent value="raz" className="mt-4"><Razonetes accounts={accounts} lines={lines} from={from} to={to} /></TabsContent>
       </Tabs>
+      <div className="mt-12 hidden grid-cols-2 gap-12 text-center text-sm print:grid"><div className="border-t pt-2">Presidente / Responsável legal</div><div className="border-t pt-2">Contador(a) · CRC</div></div>
     </>
   );
 }
