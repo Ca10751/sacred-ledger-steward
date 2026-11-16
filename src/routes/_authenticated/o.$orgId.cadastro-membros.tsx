@@ -13,6 +13,7 @@ import { useMyRole, useOrg } from "@/lib/org-data";
 export const Route = createFileRoute("/_authenticated/o/$orgId/cadastro-membros")({ component: ChurchMembers });
 type Member = { id: string; registration_number: string | null; full_name: string; cpf: string | null; birth_date: string | null; phone: string | null; email: string | null; address: string | null; joined_at: string | null; status: string; notes: string | null };
 const blank = { registration_number: "", full_name: "", cpf: "", birth_date: "", phone: "", email: "", address: "", joined_at: new Date().toISOString().slice(0,10), status: "ativo", notes: "" };
+function validCpf(value:string){const cpf=value.replace(/\\D/g,"");if(cpf.length!==11||/^([0-9])\\1{10}$/.test(cpf))return false;const digit=(base:string,factor:number)=>{let sum=0;for(const char of base)sum+=Number(char)*factor--;const rest=(sum*10)%11;return rest===10?0:rest;};return digit(cpf.slice(0,9),10)===Number(cpf[9])&&digit(cpf.slice(0,10),11)===Number(cpf[10]);}
 
 function ChurchMembers() {
   const { orgId } = Route.useParams();
@@ -38,6 +39,7 @@ function ChurchMembers() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!form.full_name.trim()) return;
+    if (form.cpf && !validCpf(form.cpf)) { toast.error("CPF inválido."); return; }
     const payload = { ...form, org_id: orgId, registration_number: form.registration_number || null, cpf: form.cpf || null, birth_date: form.birth_date || null, phone: form.phone || null, email: form.email || null, address: form.address || null, joined_at: form.joined_at || null, notes: form.notes || null };
     const result = editing
       ? await db.from("church_members").update(payload).eq("id", editing).eq("org_id", orgId)
