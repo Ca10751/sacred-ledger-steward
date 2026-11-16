@@ -81,7 +81,7 @@ export function balanceSheet(accounts: Acc[], lines: Line[], asOf: string) {
 export function downloadCsv(filename: string, headers: string[], rows: (string | number)[][]) {
   const quote = (value: string | number) => `"${String(value ?? "").replace(/"/g, '""')}"`;
   const csv = [headers, ...rows].map((row) => row.map(quote).join(";")).join("\r\n");
-  const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url; link.download = filename; link.click();
